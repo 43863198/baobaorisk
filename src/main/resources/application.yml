@@ -1,0 +1,13 @@
+server:
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: d:/tmp
+      pattern: '%h %l %u [%{yyyy-MM-dd HH:mm:ss.SSS}t] "%r" %s %b %D'
+      prefix: baobao_ris_access_log
+      suffix: .log
+
+logging.level.com.aizhixin.baobaorisk: DEBUG
+
+sys:
+  version: v0.0.1

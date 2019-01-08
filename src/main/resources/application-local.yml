@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:mysql://172.16.40.30:3306/baobao?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF8&useSSL=false
+    username: org_api
+    password: dinglicom
+    hikari:
+      auto-commit: false
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 10000
+      max-lifetime: 600000
+      idle-timeout: 60000
+      validation-timeout: 1000
+      leak-detection-threshold: 30000
+  jpa:
+      open-in-view: false
+      show-sql: true
+      hibernate:
+        ddl-auto: none
+  liquibase:
+    change-log: classpath:liquibase/master.xml
+    default-schema: baobao
