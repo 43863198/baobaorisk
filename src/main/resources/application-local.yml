@@ -24,6 +24,7 @@ spring:
 wx:
   appId: wxe03f58cd79c2d8d9
   appSecret: cd5a7206a2ec333e5684628ffa06bf1f
+  apiKey: vTHcW3eLDppmGZ8gIODRHlFKSyGd0TQ9
   mchId: 1488609932
   certPath: d:/apiclient_cert.p12
 

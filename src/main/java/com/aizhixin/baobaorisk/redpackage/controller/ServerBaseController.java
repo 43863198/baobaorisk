@@ -8,7 +8,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/open/v1")
@@ -25,7 +28,7 @@ public class ServerBaseController {
         return new StatusVO();
     }
 
-    @GetMapping(value = "/openId", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/openId", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "GET", value = "获取微信用户的OpenId", notes = "获取微信用户的OpenId<br><br><b>@author zhen.pan</b>")
     public OpenIdVO live(@ApiParam(value = "code", required = true) @RequestParam (value = "code") String code) {
         OpenIdVO o = new OpenIdVO ();

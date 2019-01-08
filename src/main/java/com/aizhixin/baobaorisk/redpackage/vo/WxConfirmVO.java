@@ -10,7 +10,10 @@ import lombok.ToString;
 @ApiModel(description="微信用户OPENID的JSON封装")
 @NoArgsConstructor
 @ToString
-public class OpenIdVO {
-    @ApiModelProperty(value = "openId")
-    @Getter @Setter private String openId = "0";
+public class WxConfirmVO {
+    @ApiModelProperty(value = "return_code")
+    @Getter @Setter private String return_code = "SUCCESS";
+
+    @ApiModelProperty(value = "return_msg")
+    @Getter @Setter private String return_msg;
 }

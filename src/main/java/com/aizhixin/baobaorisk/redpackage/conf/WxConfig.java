@@ -2,6 +2,7 @@ package com.aizhixin.baobaorisk.redpackage.conf;
 
 import com.aizhixin.baobaorisk.common.wxpay.IWXPayDomain;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayConfig;
+import com.aizhixin.baobaorisk.common.wxpay.WXPayConstants;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class WxConfig extends WXPayConfig {
     @Getter  private String appID;
     @Value("${wx.mchId}")
     @Getter  private String mchID;
-    @Value("${wx.appSecret}")
+    @Value("${wx.apiKey}")
     @Getter  private String key;
 
 
@@ -41,7 +42,17 @@ public class WxConfig extends WXPayConfig {
 
     @Override
     public IWXPayDomain getWXPayDomain() {
-        return null;
+        IWXPayDomain iwxPayDomain = new IWXPayDomain() {
+            @Override
+            public void report(String domain, long elapsedTimeMillis, Exception ex) {
+
+            }
+            @Override
+            public DomainInfo getDomain(WXPayConfig config) {
+                return new IWXPayDomain.DomainInfo(WXPayConstants.DOMAIN_API, true);
+            }
+        };
+        return iwxPayDomain;
     }
 
     @Override
