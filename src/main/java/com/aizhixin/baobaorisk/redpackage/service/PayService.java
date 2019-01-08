@@ -24,7 +24,7 @@ public class PayService {
 
         Map<String, String> data = new HashMap<>();
         data.put("body", "包包大冒险-红包充值");
-        data.put("out_trade_no", "2019010810595900000011");
+        data.put("out_trade_no", "2019010810595900000012");
         data.put("device_info", "");
         data.put("fee_type", "CNY");
         data.put("openid", "oIqbS5GGXlcHxC4W9RIsbTKY4zkg");
