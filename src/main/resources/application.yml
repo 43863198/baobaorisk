@@ -1,20 +1,3 @@
-server:
-  tomcat:
-    accesslog:
-      enabled: true
-      directory: ../logs/
-      pattern: '%h %l %u [%{yyyy-MM-dd HH:mm:ss.SSS}t] "%r" %s %b %D'
-      prefix: baobao_ris_access_log
-      suffix: .log
-
 logging.level.com.aizhixin.baobaorisk: DEBUG
-
-wx:
-  appId: wxe03f58cd79c2d8d9
-  appSecret: cd5a7206a2ec333e5684628ffa06bf1f
-  mchId: 1488609932
-  certPath: ../cet/apiclient_cert.p12
-
-
 sys:
-  version: v0.0.1
+  version: v0.1.0

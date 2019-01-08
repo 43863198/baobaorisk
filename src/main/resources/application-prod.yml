@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://172.16.40.30:3306/baobao?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF8&useSSL=false
+    url: jdbc:mysql://172.16.23.20:3306/baobao?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF8&useSSL=false
     username: org_api
-    password: dinglicom
+    password: LTwx0BL59jC5
     hikari:
       auto-commit: false
       minimum-idle: 2
@@ -25,14 +25,13 @@ wx:
   appId: wxe03f58cd79c2d8d9
   appSecret: cd5a7206a2ec333e5684628ffa06bf1f
   mchId: 1488609932
-  certPath: d:/apiclient_cert.p12
-
+  certPath: /dinglicom/cet/apiclient_cert.p12
 
 server:
   tomcat:
     accesslog:
       enabled: true
-      directory: d:/logs/
+      directory: /dinglicom/logs/
       pattern: '%h %l %u [%{yyyy-MM-dd HH:mm:ss.SSS}t] "%r" %s %b %D'
       prefix: baobao_ris_access_log
       suffix: .log
