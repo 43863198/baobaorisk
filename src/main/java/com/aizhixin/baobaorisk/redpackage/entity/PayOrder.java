@@ -50,6 +50,10 @@ public class PayOrder implements java.io.Serializable {
     @Column(name = "TOTAL_FEE")
     @Getter @Setter private Integer totalFee;
 
+    @ApiModelProperty(value = "红包数量")
+    @Column(name = "NUM")
+    @Getter @Setter private Integer num;
+
     @ApiModelProperty(value = "预付单号")
     @Column(name = "PREPAY_ID")
     @Getter @Setter private String prepayId;

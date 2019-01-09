@@ -70,7 +70,8 @@ public class PayService {
         PayOrder o = new PayOrder ();
         o.setTradeName("包包大冒险-红包充值");//订单详情
         o.setTradeNo(Utility.generateUUID());//订单号
-        o.setTotalFee((int)(totalFee * 100));
+        o.setTotalFee((int)(totalFee * 100));//红包金额
+        o.setNum(num);//红包数量
         o.setOpenId(openId);
 
         Map<String, String> data = new HashMap<>();
