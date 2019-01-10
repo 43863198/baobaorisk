@@ -41,7 +41,7 @@ public class PayNotifyController {
                 "</xml>";
 //        Map<String, String> map = new HashMap<>();
 //        map.put("return_code", "SUCCESS");
-//        map.put("return_msg", "OK");
+//        map.put("return_msg", "");
         try {
 //            String rs = WXPayUtil.mapToXml(map);
             response.getOutputStream().write(rs.getBytes("UTF-8"));
