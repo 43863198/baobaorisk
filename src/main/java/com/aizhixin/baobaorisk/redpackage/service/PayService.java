@@ -87,6 +87,7 @@ public class PayService {
 
         try {
             Map<String, String> resp = wxpay.unifiedOrder(data);
+            log.info("weixin pre prepare back msg:{}", resp);
             if ("SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
                 o.setPrepayId(resp.get("prepay_id"));
                 o.setNonceStr(resp.get("nonce_str"));
