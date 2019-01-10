@@ -35,10 +35,6 @@ public class PayOrder implements java.io.Serializable {
     @Column(name = "OPENID")
     @Getter @Setter private String openId;
 
-    @ApiModelProperty(value = "微信订单交易号")
-    @Column(name = "WX_TRADE_NO")
-    @Getter @Setter private String wxTradeNo;
-
     @ApiModelProperty(value = "订单号/交易号")
     @Column(name = "TRADE_NO")
     @Getter @Setter private String tradeNo;
