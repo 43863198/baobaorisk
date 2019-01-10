@@ -37,10 +37,15 @@ public class PayNotifyController {
         payService.payNotify(notifyData);
         String rs = "<xml>" +
                 "  <return_code><![CDATA[SUCCESS]]></return_code>" +
-                "  <return_msg><![CDATA[OK]]></return_msg>" +
+                "  <return_msg><![CDATA[]]></return_msg>" +
                 "</xml>";
+//        Map<String, String> map = new HashMap<>();
+//        map.put("return_code", "SUCCESS");
+//        map.put("return_msg", "OK");
         try {
+//            String rs = WXPayUtil.mapToXml(map);
             response.getOutputStream().write(rs.getBytes("UTF-8"));
+            response.getOutputStream().flush();
         } catch (Exception e) {
             e.printStackTrace();
         }

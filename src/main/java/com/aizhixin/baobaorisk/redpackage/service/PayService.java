@@ -131,7 +131,9 @@ public class PayService {
                 // 进行处理。
                 // 注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户侧订单状态从退款改成支付成功
                 String tradeNo = notifyMap.get("out_trade_no");
-                if ("SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) && "SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) && !StringUtils.isEmpty(tradeNo)) {
+                if (    "SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) &&
+                        "SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) &&
+                        !StringUtils.isEmpty(tradeNo)) {
                     createTask(tradeNo);//创建红包任务
                 } else {
                     log.info("支付失败：{}", notifyMap);
