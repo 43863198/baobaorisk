@@ -32,5 +32,18 @@ public class BaobaoriskApplicationTests {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void testMapToXML() {
+		Map<String, String> map = new HashMap<>();
+		map.put("return_code", "SUCCESS");
+		map.put("return_msg", "OK");
+		try {
+			System.out.println(WXPayUtil.mapToXml(map));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 }
 
