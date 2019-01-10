@@ -26,4 +26,13 @@ public class PayOrderManager {
         }
         return null;
     }
+
+    @Transactional(readOnly = true)
+    public PayOrder findByTradeNo(String tradeNo) {
+        List<PayOrder> list = payOrderRepository.findByTradeNo(tradeNo);
+        if (null != list && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
+    }
 }
