@@ -19,9 +19,9 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="OPENID" type="VARCHAR(60)" remarks="OPENID"/>
-            <column name="WX_TRADE_NO" type="VARCHAR(60)" remarks="微信订单交易号"/>
             <column name="TRADE_NO" type="VARCHAR(60)" remarks="订单号/交易号"/>
             <column name="TRADE_NAME" type="VARCHAR(120)" remarks="交易名称"/>
+            <column name="TASK_NAME" type="VARCHAR(120)" remarks="任务名称"/>
             <column name="TOTAL_FEE" type="int(11)" remarks="交易/订单金额(分)"/>
             <column name="NUM" type="int(11)" remarks="红包数量"/>
             <column name="PREPAY_ID" type="VARCHAR(60)" remarks="预付单号"/>

@@ -4,12 +4,14 @@ import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.common.wxpay.WXPay;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayUtil;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
+import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
 import com.aizhixin.baobaorisk.redpackage.manager.PayOrderManager;
 import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -57,6 +59,7 @@ public class PayService {
         if (StringUtils.isEmpty(openId) || null == totalFee ||
                 totalFee <= 0.01 || totalFee > 200 || null == num ||
                 num <= 0 || num > 100 || totalFee/num < 0.01) {
+            log.info("Param validator fail.openId:{}, totoalFee:{}, num:{}", openId, totalFee, num);
             vo.setReturn_code("FAIL");
             return vo;
         }
@@ -87,24 +90,26 @@ public class PayService {
 
         try {
             Map<String, String> resp = wxpay.unifiedOrder(data);
-            log.info("weixin pre prepare back msg:{}", resp);
-            if ("SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
+            log.info("weixin prePay back msg:{}", resp);
+            if ("SUCCESS".equalsIgnoreCase(resp.get("return_code")) && "SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
                 o.setPrepayId(resp.get("prepay_id"));
                 o.setNonceStr(resp.get("nonce_str"));
                 vo.setNonceStr(o.getNonceStr());
-                vo.setPrepayId(o.getPrepayId());
-                vo.setPayPackage("https://wx.aizhixin.com/");
+//                vo.setPrepayId(o.getPrepayId());
+//                vo.setPayPackage("https://wx.aizhixin.com/");
+                vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
                 vo.setSignType("MD5");
                 vo.setAppId(wxConfig.getAppID());
-                vo.setMchId(wxConfig.getMchID());
+//                vo.setMchId(wxConfig.getMchID());
 
                 Map<String,String> repData = new HashMap<>();
                 repData.put("appId",vo.getAppId());
-                repData.put("mchId",vo.getMchId());
-                repData.put("prepayId",vo.getPrepayId());
+//                repData.put("mchId",vo.getMchId());
+//                repData.put("prepayId",vo.getPrepayId());
                 repData.put("package",vo.getPayPackage());
                 repData.put("nonceStr",vo.getNonceStr());
+                repData.put("signType","MD5");
                 repData.put("timeStamp",vo.getTimestamp());
                 String sign = WXPayUtil.generateSignature(repData,wxConfig.getKey()); //签名
                 vo.setSign(sign);
@@ -121,7 +126,7 @@ public class PayService {
 
 
     public void payNotify(String xml) {
-        System.out.println(xml);
+        log.info("Weixin pay notify xml data:{}", xml);
         try {
             WXPay wxpay = new WXPay(wxConfig);
             Map<String, String> notifyMap = WXPayUtil.xmlToMap(xml);  // 转换成map
@@ -129,13 +134,30 @@ public class PayService {
                 // 签名正确
                 // 进行处理。
                 // 注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户侧订单状态从退款改成支付成功
-                System.out.println("签名正确");
+                String prepayId = notifyMap.get("prepay_id");
+                if ("SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) && "SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) && !StringUtils.isEmpty(prepayId)) {
+                    createTask(prepayId);//创建红包任务
+                } else {
+                    log.info("支付失败：{}", notifyMap);
+                }
             } else {
                 // 签名错误，如果数据里没有sign字段，也认为是签名错误
-                System.out.println("签名错误");
+                log.info("签名错误:{}", notifyMap);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Weixin pay notify process fail.xml data:{},error:{}", xml, e);
+        }
+    }
+    @Transactional
+    public void createTask(String prepayId) {
+        PayOrder o = payOrderManager.findByPrepayId(prepayId);
+        if (null != o) {
+            if (TradeStatus.PrePaySuccess.getStateCode() != o.getPayStatus()) {//首次接收到成功支付回调
+                o.setPayStatus(TradeStatus.PrePaySuccess.getStateCode());
+                payOrderManager.save(o);
+            }//否则重复调用，不予理睬
+        } else {
+            log.warn("Weixin pay notify not found order by prepayId:{}", prepayId);
         }
     }
 }
