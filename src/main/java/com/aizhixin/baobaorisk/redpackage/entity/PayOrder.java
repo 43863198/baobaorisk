@@ -59,10 +59,6 @@ public class PayOrder implements java.io.Serializable {
     @Column(name = "PREPAY_ID")
     @Getter @Setter private String prepayId;
 
-    @ApiModelProperty(value = "预支付随机码")
-    @Column(name = "NONCE_STR")
-    @Getter @Setter private String nonceStr;
-
     @ApiModelProperty(value = "交易状态，预支付10，支付失败20，支付成功80")
     @Column(name = "PAY_STATUS")
     @Getter @Setter private int payStatus = TradeStatus.PrePay.getStateCode();
