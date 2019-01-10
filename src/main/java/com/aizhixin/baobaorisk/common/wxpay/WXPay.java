@@ -40,12 +40,12 @@ public class WXPay {
         this.notifyUrl = notifyUrl;
         this.autoReport = autoReport;
         this.useSandbox = useSandbox;
-        if (useSandbox) {
-            this.signType = SignType.MD5; // 沙箱环境
-        }
-        else {
+//        if (useSandbox) {
+//            this.signType = SignType.MD5; // 沙箱环境
+//        }
+//        else {
             this.signType = SignType.MD5;
-        }
+//        }
         this.wxPayRequest = new WXPayRequest(config);
     }
 
