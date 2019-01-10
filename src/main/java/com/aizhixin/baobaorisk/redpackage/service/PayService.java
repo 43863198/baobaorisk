@@ -97,7 +97,7 @@ public class PayService {
                 vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
-                vo.setSignType("HMACSHA256");
+                vo.setSignType("MD5");
                 vo.setAppId(wxConfig.getAppID());
 
                 Map<String,String> repData = new HashMap<>();
