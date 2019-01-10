@@ -39,7 +39,6 @@ public class ServerBaseController {
         return o;
     }
 
-
     @PostMapping(value = "/order/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "POST", value = "红包充值", notes = "红包充值,总金额/红包数量 >= 0.01<br><br><b>@author zhen.pan</b>")
     public WxPrePayVO order(@ApiParam(value = "openId", required = true) @PathVariable String openId,
