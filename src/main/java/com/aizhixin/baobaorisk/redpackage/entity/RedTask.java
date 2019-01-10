@@ -19,11 +19,11 @@ import javax.persistence.*;
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
-@ApiModel(description="交易记录/支付订单")
-@Entity(name = "T_PAY_ORDER")
+@ApiModel(description="红包任务")
+//@Entity(name = "T_RED_TASK")
 @NoArgsConstructor
 @ToString
-public class PayOrder implements java.io.Serializable {
+public class RedTask implements java.io.Serializable {
     @ApiModelProperty(value = "ID")
     @Id
     @GeneratedValue(generator = "jpa-uuid")

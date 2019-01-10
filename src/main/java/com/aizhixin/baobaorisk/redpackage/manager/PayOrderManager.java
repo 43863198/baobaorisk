@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 @Component
 public class PayOrderManager {
@@ -14,5 +16,14 @@ public class PayOrderManager {
 
     public PayOrder save(PayOrder entity) {
         return payOrderRepository.save(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public PayOrder findByPrepayId(String prepayId) {
+        List<PayOrder> list = payOrderRepository.findByPrepayId(prepayId);
+        if (null != list && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
     }
 }

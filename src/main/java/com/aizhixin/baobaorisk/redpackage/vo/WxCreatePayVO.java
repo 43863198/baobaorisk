@@ -11,9 +11,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class WxCreatePayVO {
-    @ApiModelProperty(value = "openId")
-    @Getter @Setter private String openId;
-
     @ApiModelProperty(value = "红包总金额(大于0，小于200)")
     @Getter @Setter private Double totalFee;
 
