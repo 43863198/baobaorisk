@@ -53,7 +53,7 @@ public class PayService {
         }
     }
 
-    public WxPrePayVO createOrder(String openId, Double totalFee, Integer num) {
+    public WxPrePayVO createOrder(String openId, Double totalFee, Integer num, String taskName) {
         WXPay wxpay = null;
         WxPrePayVO vo = new WxPrePayVO ();
         if (StringUtils.isEmpty(openId) || null == totalFee ||
@@ -71,6 +71,7 @@ public class PayService {
 
 
         PayOrder o = new PayOrder ();
+        o.setTaskName(taskName);
         o.setTradeName("包包大冒险-红包充值");//订单详情
         o.setTradeNo(Utility.generateUUID());//订单号
         o.setTotalFee((int)(totalFee * 100));//红包金额
@@ -80,7 +81,6 @@ public class PayService {
         Map<String, String> data = new HashMap<>();
         data.put("body", o.getTradeName());
         data.put("out_trade_no", o.getTradeNo());
-        data.put("device_info", "");
         data.put("fee_type", "CNY");
         data.put("openid", o.getOpenId());
         data.put("total_fee", o.getTotalFee().toString());
@@ -93,20 +93,14 @@ public class PayService {
             log.info("weixin prePay back msg:{}", resp);
             if ("SUCCESS".equalsIgnoreCase(resp.get("return_code")) && "SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
                 o.setPrepayId(resp.get("prepay_id"));
-                o.setNonceStr(resp.get("nonce_str"));
-                vo.setNonceStr(o.getNonceStr());
-//                vo.setPrepayId(o.getPrepayId());
-//                vo.setPayPackage("https://wx.aizhixin.com/");
+                vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
                 vo.setSignType("MD5");
                 vo.setAppId(wxConfig.getAppID());
-//                vo.setMchId(wxConfig.getMchID());
 
                 Map<String,String> repData = new HashMap<>();
                 repData.put("appId",vo.getAppId());
-//                repData.put("mchId",vo.getMchId());
-//                repData.put("prepayId",vo.getPrepayId());
                 repData.put("package",vo.getPayPackage());
                 repData.put("nonceStr",vo.getNonceStr());
                 repData.put("signType","MD5");
