@@ -130,9 +130,9 @@ public class PayService {
                 // 签名正确
                 // 进行处理。
                 // 注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户侧订单状态从退款改成支付成功
-                String prepayId = notifyMap.get("prepay_id");
-                if ("SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) && "SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) && !StringUtils.isEmpty(prepayId)) {
-                    createTask(prepayId);//创建红包任务
+                String tradeNo = notifyMap.get("out_trade_no");
+                if ("SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) && "SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) && !StringUtils.isEmpty(tradeNo)) {
+                    createTask(tradeNo);//创建红包任务
                 } else {
                     log.info("支付失败：{}", notifyMap);
                 }
@@ -145,15 +145,15 @@ public class PayService {
         }
     }
     @Transactional
-    public void createTask(String prepayId) {
-        PayOrder o = payOrderManager.findByPrepayId(prepayId);
+    public void createTask(String tradeNo) {
+        PayOrder o = payOrderManager.findByTradeNo(tradeNo);
         if (null != o) {
             if (TradeStatus.PrePaySuccess.getStateCode() != o.getPayStatus()) {//首次接收到成功支付回调
                 o.setPayStatus(TradeStatus.PrePaySuccess.getStateCode());
                 payOrderManager.save(o);
             }//否则重复调用，不予理睬
         } else {
-            log.warn("Weixin pay notify not found order by prepayId:{}", prepayId);
+            log.warn("Weixin pay notify not found order by tradeNo:{}", tradeNo);
         }
     }
 }

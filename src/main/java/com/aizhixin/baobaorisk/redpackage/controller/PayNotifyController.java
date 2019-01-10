@@ -1,7 +1,6 @@
 package com.aizhixin.baobaorisk.redpackage.controller;
 
 import com.aizhixin.baobaorisk.redpackage.service.PayService;
-import com.aizhixin.baobaorisk.redpackage.vo.WxConfirmVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,7 +20,7 @@ public class PayNotifyController {
     private PayService payService;
 
     @RequestMapping(value = "/notify")
-    public WxConfirmVO payNotify(HttpServletRequest request, HttpServletResponse response) {
+    public void payNotify(HttpServletRequest request, HttpServletResponse response) {
         log.info("Call back invoke....");
         String notifyData = "...."; // 支付结果通知的xml格式数据
         StringBuilder tStringBuffer = new StringBuilder();
@@ -36,10 +35,15 @@ public class PayNotifyController {
         }
         notifyData = tStringBuffer.toString();
         payService.payNotify(notifyData);
-
-        WxConfirmVO v = new WxConfirmVO ();
-
-        return v;
+        String rs = "<xml>" +
+                "  <return_code><![CDATA[SUCCESS]]></return_code>" +
+                "  <return_msg><![CDATA[OK]]></return_msg>" +
+                "</xml>";
+        try {
+            response.getOutputStream().write(rs.getBytes("UTF-8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
