@@ -93,19 +93,21 @@ public class PayService {
             log.info("weixin prePay back msg:{}", resp);
             if ("SUCCESS".equalsIgnoreCase(resp.get("return_code")) && "SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
                 o.setPrepayId(resp.get("prepay_id"));
+
                 vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
-                vo.setSignType("MD5");
+                vo.setSignType("HMACSHA256");
                 vo.setAppId(wxConfig.getAppID());
 
                 Map<String,String> repData = new HashMap<>();
                 repData.put("appId",vo.getAppId());
                 repData.put("package",vo.getPayPackage());
                 repData.put("nonceStr",vo.getNonceStr());
-                repData.put("signType","MD5");
+                repData.put("signType", vo.getSignType());
                 repData.put("timeStamp",vo.getTimestamp());
                 String sign = WXPayUtil.generateSignature(repData,wxConfig.getKey()); //签名
+                vo.setAppId(null);
                 vo.setSign(sign);
                 payOrderManager.save(o);
             } else {
