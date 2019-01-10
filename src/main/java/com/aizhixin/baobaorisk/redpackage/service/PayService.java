@@ -92,7 +92,7 @@ public class PayService {
                 o.setNonceStr(resp.get("nonce_str"));
                 vo.setNonceStr(o.getNonceStr());
                 vo.setPrepayId(o.getPrepayId());
-                vo.setPayPackage("WXPay");
+                vo.setPayPackage("https://wx.aizhixin.com/");
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
                 vo.setSignType("MD5");
                 vo.setAppId(wxConfig.getAppID());
