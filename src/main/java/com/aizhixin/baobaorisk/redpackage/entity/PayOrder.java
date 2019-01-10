@@ -18,11 +18,11 @@ import javax.persistence.*;
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
-@ApiModel(description="微信用户信息")
-//@Entity(name = "T_WEIXIN_USER")
+@ApiModel(description="交易记录/支付订单")
+@Entity(name = "T_PAY_ORDER")
 @NoArgsConstructor
 @ToString
-public class WeixinUser implements java.io.Serializable {
+public class PayOrder implements java.io.Serializable {
     @ApiModelProperty(value = "ID")
     @Id
     @GeneratedValue(generator = "jpa-uuid")
@@ -31,40 +31,40 @@ public class WeixinUser implements java.io.Serializable {
     @Getter @Setter private String id;
 
     @ApiModelProperty(value = "openId")
-    @Column(name = "OPEN_ID")
+    @Column(name = "OPENID")
     @Getter @Setter private String openId;
 
-    @ApiModelProperty(value = "unionId")
-    @Column(name = "UNIONID")
-    @Getter @Setter private String unionId;
+    @ApiModelProperty(value = "微信订单交易号")
+    @Column(name = "WX_TRADE_NO")
+    @Getter @Setter private String wxTradeNo;
 
-    @ApiModelProperty(value = "微信头像URL")
-    @Column(name = "AVATAR")
-    @Getter @Setter private String avatar;
+    @ApiModelProperty(value = "订单号/交易号")
+    @Column(name = "TRADE_NO")
+    @Getter @Setter private String tradeNo;
 
-    @ApiModelProperty(value = "昵称")
-    @Column(name = "NICK")
-    @Getter @Setter private String nick;
+    @ApiModelProperty(value = "交易名称")
+    @Column(name = "TRADE_NAME")
+    @Getter @Setter private String tradeName;
 
-    @ApiModelProperty(value = "性别")
-    @Column(name = "GENDER")
-    @Getter @Setter private String gender;
+    @ApiModelProperty(value = "交易/订单金额(分)")
+    @Column(name = "TOTAL_FEE")
+    @Getter @Setter private Integer totalFee;
 
-    @ApiModelProperty(value = "城市")
-    @Column(name = "CITY")
-    @Getter @Setter private String city;
+    @ApiModelProperty(value = "红包数量")
+    @Column(name = "NUM")
+    @Getter @Setter private Integer num;
 
-    @ApiModelProperty(value = "省")
-    @Column(name = "PROVINCE")
-    @Getter @Setter private String province;
+    @ApiModelProperty(value = "预付单号")
+    @Column(name = "PREPAY_ID")
+    @Getter @Setter private String prepayId;
 
-    @ApiModelProperty(value = "国家")
-    @Column(name = "COUNTRY")
-    @Getter @Setter private String country;
+    @ApiModelProperty(value = "预支付随机码")
+    @Column(name = "NONCE_STR")
+    @Getter @Setter private String nonceStr;
 
-    @ApiModelProperty(value = "语言")
-    @Column(name = "LANGUAGE")
-    @Getter @Setter private String language;
+    @ApiModelProperty(value = "交易状态，预支付10，支付失败20，交易成功80")
+    @Column(name = "PAY_STATUS")
+    @Getter @Setter private int payStatus = 10;
 
     @ApiModelProperty(value = "创建时间")
     @CreatedDate

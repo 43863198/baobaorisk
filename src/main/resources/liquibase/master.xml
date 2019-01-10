@@ -5,7 +5,6 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-	<!--<include file="classpath:liquibase/changelog/20180417091532_add_entity_TeachingRecord.xml" relativeToChangelogFile="false"/>-->
-	<!--<include file="classpath:liquibase/changelog/20180417091732_add_entity_TeachingRecordDetail.xml" relativeToChangelogFile="false"/>-->
+	<include file="classpath:liquibase/changelog/20190109102145_add_entity_PayOrder.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
