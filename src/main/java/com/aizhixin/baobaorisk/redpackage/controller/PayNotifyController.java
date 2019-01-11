@@ -1,6 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.controller;
 
 import com.aizhixin.baobaorisk.redpackage.service.PayService;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ import java.io.InputStreamReader;
 @Controller
 @RequestMapping("/open/v1/wxpay")
 @Slf4j
+@Api(description = "提供给微信支付后台回调的API")
 public class PayNotifyController {
     private final static String SUCCESS_STR = "<xml>" +
             "  <return_code><![CDATA[SUCCESS]]></return_code>" +
