@@ -31,7 +31,7 @@ public class PublishRedPackageTaskController {
     }
 
     @GetMapping(value = "/publish/{openId}/{pageNumber}/{pageSize}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(httpMethod = "GET", value = "已发布红包任务的查询", notes = "已发布红包任务的查询<br><br><b>@author zhen.pan</b>")
+    @ApiOperation(httpMethod = "GET", value = "已发布红包任务的分页查询", notes = "已发布红包任务的分页查询<br><br><b>@author zhen.pan</b>")
     public PageData<PublishRedPackageVO> publish(@ApiParam(value = "openId", required = true) @PathVariable String openId,
                                                  @ApiParam(value = "pageNumber", required = true) @PathVariable Integer pageNumber,
                                                  @ApiParam(value = "pageSize", required = true) @PathVariable Integer pageSize) {
@@ -39,7 +39,7 @@ public class PublishRedPackageTaskController {
     }
 
     @GetMapping(value = "/publish/{openId}/count", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(httpMethod = "GET", value = "已发布红包任务的合计查询", notes = "已发布红包任务的合计查询<br><br><b>@author zhen.pan</b>")
+    @ApiOperation(httpMethod = "GET", value = "已发布红包任务的合计值查询", notes = "已发布红包任务的合计值查询<br><br><b>@author zhen.pan</b>")
     public PublishRedPackageCountVO publish(@ApiParam(value = "openId", required = true) @PathVariable String openId) {
         return publishRedPackageTaskService.countPublish(openId);
     }
