@@ -21,9 +21,9 @@ public class PublishRedPackageCountVO {
     @ApiModelProperty(value = "红包总数量")
     @Getter @Setter private int redNum = 0;
 
-    public PublishRedPackageCountVO(Integer taskNum, Double totalFee, Integer redNum) {
-        this.taskNum = taskNum;
+    public PublishRedPackageCountVO(long taskNum, double totalFee, long redNum) {
+        this.taskNum = (int)taskNum;
         this.totalFee = totalFee;
-        this.redNum = redNum;
+        this.redNum = (int)redNum;
     }
 }
