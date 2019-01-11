@@ -4,6 +4,7 @@ import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.common.wxpay.WXPay;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayUtil;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
+import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
@@ -76,23 +77,33 @@ public class PayService {
                     WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code")) &&
                     !StringUtils.isEmpty(resp.get("prepay_id"))) {//预支付成功
                 o.setPrepayId(resp.get("prepay_id"));
-                payOrderManager.save(o);//支付订单数据保存
+                o = payOrderManager.save(o);//支付订单数据保存
+
+                /***********************创建红包任务信息***********************/
+                RedTask r = new RedTask();
+                r.setOpenId(o.getOpenId());//任务发起人
+                r.setTradeNo(o.getTradeNo());//订单号
+                r.setTaskName(o.getTaskName());//任务名称
+                r.setNum(o.getNum());//红包数量
+                r.setTotalFee(o.getCashFee());//红包金额
+                r = redTaskManager.save(r);
+                vo.setPublishTaskId(r.getId());//红包任务ID
 
                 /***********************小程序用户支付确认所需数据对象数据构造***********************/
                 vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
                 vo.setSignType(WeixinContants.SIGN_TYPE);
-                vo.setAppId(wxConfig.getAppID());
+//                vo.setAppId(wxConfig.getAppID());
 
                 Map<String,String> repData = new HashMap<>();
-                repData.put("appId",vo.getAppId());
+                repData.put("appId",wxConfig.getAppID());
                 repData.put("package",vo.getPayPackage());
                 repData.put("nonceStr",vo.getNonceStr());
                 repData.put("signType", vo.getSignType());
                 repData.put("timeStamp",vo.getTimestamp());
                 String sign = WXPayUtil.generateSignature(repData,wxConfig.getKey()); //签名
-                vo.setAppId(null);
+
                 vo.setSign(sign);
             } else {
                 log.info("Weixin Order create prepay fail. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
@@ -117,13 +128,13 @@ public class PayService {
             if (WeixinContants.SUCCESS.equalsIgnoreCase(notifyMap.get("result_code")) &&
                     WeixinContants.SUCCESS.equalsIgnoreCase(notifyMap.get("return_code")) &&
                     !StringUtils.isEmpty(tradeNo)) {
-                log.info("Weixin pay notify map data:{}", notifyMap);
+                log.info("微信小程序付款回调，map data:{}", notifyMap);
                 createTask(tradeNo, notifyMap);//创建红包任务
             } else {
-                log.info("支付失败：{}", notifyMap);
+                log.info("微信小程序付款回调，支付失败：{}", notifyMap);
             }
         } else {
-            log.info("签名错误:{}", notifyMap);// 签名错误，如果数据里没有sign字段，也认为是签名错误
+            log.info("微信小程序付款回调，签名错误:{}", notifyMap);// 签名错误，如果数据里没有sign字段，也认为是签名错误
         }
     }
 
@@ -147,22 +158,21 @@ public class PayService {
                 t = notifyMap.get("total_fee");
                 if (null != t) {
                     if (o.getTotalFee().intValue() != new Integer(t)) {
-                        log.warn("Weixin pay notify order fee is:({}), but cash fee is:({})", o.getTotalFee(), t);
+                        log.warn("微信小程序付款回调，订单金额:({}), 实际付款金额:({})", o.getTotalFee(), t);
                     }
                 }
                 payOrderManager.save(o);
 
-                /***********************创建红包任务信息***********************/
-                RedTask r = new RedTask();
-                r.setOpenId(o.getOpenId());//任务发起人
-                r.setTradeNo(o.getTradeNo());//订单号
-                r.setTaskName(o.getTaskName());//任务名称
-                r.setNum(o.getNum());//红包数量
-                r.setTotalFee(o.getCashFee());//红包金额
-                redTaskManager.save(r);
+                RedTask r = redTaskManager.findByTradeNo(tradeNo);
+                if (null != r) {
+                    r.setRedStatus(RedPackageTaskStatus.TASKING.getStateCode());
+                    redTaskManager.save(r);
+                } else {
+                    log.warn("订单号:({})无对应的发布红包数据", tradeNo);
+                }
             }//否则重复调用，不予理睬
         } else {
-            log.warn("Weixin pay notify not found order by tradeNo:{}", tradeNo);
+            log.warn("微信小程序付款回调，没有找到订单号:{}", tradeNo);
         }
     }
 }
