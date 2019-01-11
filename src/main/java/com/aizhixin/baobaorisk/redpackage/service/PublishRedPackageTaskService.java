@@ -9,6 +9,7 @@ import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
+import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageDetailVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageVO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,6 +71,10 @@ public class PublishRedPackageTaskService {
             log.warn("调用微信获取访问token失败", e);
         }
         return accessToken;
+    }
+
+    private String getUserInfo(String accessToken, String openId) {
+        return restUtil.get("https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken + "&openid=" + openId + "&lang=zh_CN", null);
     }
 
     /**
@@ -137,7 +142,6 @@ public class PublishRedPackageTaskService {
         return redTaskManager.countByOpenId(openId);
     }
 
-    @Transactional(readOnly = true)
     public String getWxCode(String taskId, String path, Integer width) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
@@ -183,6 +187,12 @@ public class PublishRedPackageTaskService {
                     outputStream.write(buffer, 0, content);
                 }
                 outputStream.flush();
+
+                RedTask r = redTaskManager.findById(taskId);
+                if (null != r) {
+                    r.setPicname(filename);
+                    redTaskManager.save(r);
+                }
             }
         }catch (Exception e){
             log.error("调用小程序生成微信永久小程序码URL接口异常: "+e.getMessage());
@@ -232,5 +242,28 @@ public class PublishRedPackageTaskService {
                 }
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public String getUserInfo(String openId) {
+        return getUserInfo(getWeixinAccessToken(), openId);
+    }
+
+    @Transactional(readOnly = true)
+    public PublishRedPackageDetailVO getPublishRedPackageTask(String taskId) {
+        PublishRedPackageDetailVO vo = new PublishRedPackageDetailVO ();
+        RedTask r = redTaskManager.findById(taskId);
+        if (null != r) {
+            vo.setId(r.getId());
+            vo.setAvatar(r.getAvatar());
+            vo.setNick(r.getNick());
+            vo.setCreateDate(r.getCreatedDate());
+            vo.setNum(r.getNum());
+            vo.setPicName(r.getPicname());
+            vo.setTotalFee(r.getTotalFee()/100.0);
+            vo.setRemark(r.getTaskName());
+            vo.setStatus(r.getRedStatus());
+        }
+        return vo;
     }
 }

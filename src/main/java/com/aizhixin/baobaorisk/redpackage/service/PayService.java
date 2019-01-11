@@ -35,7 +35,7 @@ public class PayService {
     /**
      * 创建红包订单任务（用于记录支付情况）
      */
-    public WxPrePayVO createOrder(String openId, Double totalFee, Integer num, String taskName) {
+    public WxPrePayVO createOrder(String openId, Double totalFee, Integer num, String taskName, String nick, String avatar) {
         WXPay wxpay;//微信预支付对象
         WxPrePayVO vo = new WxPrePayVO ();//小程序用户支付确认所需数据对象
 
@@ -57,6 +57,8 @@ public class PayService {
         o.setTotalFee((int)(totalFee * 100));//红包金额
         o.setNum(num);//红包数量
         o.setOpenId(openId);
+        o.setAvatar(avatar);
+        o.setNick(nick);
 
         /***********************预支付数据构造及调用***********************/
         Map<String, String> data = new HashMap<>();
@@ -86,6 +88,8 @@ public class PayService {
                 r.setTaskName(o.getTaskName());//任务名称
                 r.setNum(o.getNum());//红包数量
                 r.setTotalFee(o.getCashFee());//红包金额
+                r.setAvatar(o.getAvatar());
+                r.setNick(o.getNick());
                 r = redTaskManager.save(r);
                 vo.setPublishTaskId(r.getId());//红包任务ID
 

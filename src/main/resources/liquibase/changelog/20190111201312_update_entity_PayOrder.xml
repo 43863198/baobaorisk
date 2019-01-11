@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <property name="now" value="now()" dbms="mysql,h2"/>
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="now" value="sysdate" dbms="oracle"/>
+    <!-- 用户订单表结构修改-->
+    <changeSet id="20190111201312" author="zhen.pan">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="T_PAY_ORDER" columnName="AVATAR"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="T_PAY_ORDER">
+            <column name="NICK" type="VARCHAR(80)" remarks="昵称" />
+            <column name="AVATAR" type="VARCHAR(180)" remarks="头像"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

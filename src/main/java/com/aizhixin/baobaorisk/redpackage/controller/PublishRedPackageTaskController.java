@@ -24,7 +24,7 @@ public class PublishRedPackageTaskController {
     @ApiOperation(httpMethod = "POST", value = "红包充值", notes = "红包充值<br><br><b>@author zhen.pan</b>")
     public WxPrePayVO order(@ApiParam(value = "openId", required = true) @PathVariable String openId,
                             @ApiParam(value = "红包总金额(大于0，小于200)<br/>红包数量(大于0，小于100)<br/>红包充值,总金额/红包数量 >= 0.01", required = true) @RequestBody WxCreatePayVO payVo) {
-        return payService.createOrder(openId, payVo.getTotalFee(), payVo.getNum(), payVo.getRemark());
+        return payService.createOrder(openId, payVo.getTotalFee(), payVo.getNum(), payVo.getRemark(), payVo.getNick(), payVo.getAvatar());
     }
 
     @GetMapping(value = "/publish/{openId}/{pageNumber}/{pageSize}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,5 +49,11 @@ public class PublishRedPackageTaskController {
         OneStrVO vo = new OneStrVO ();
         vo.setName(publishRedPackageTaskService.getWxCode(taskId, path, width));
         return vo;
+    }
+
+    @GetMapping(value = "/task/{taskId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "获取红包任务详情", notes = "获取红包任务详情<br><br><b>@author zhen.pan</b>")
+    public PublishRedPackageDetailVO taskDetails(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId) {
+        return publishRedPackageTaskService.getPublishRedPackageTask(taskId);
     }
 }

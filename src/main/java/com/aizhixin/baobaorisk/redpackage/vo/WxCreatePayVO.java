@@ -19,4 +19,10 @@ public class WxCreatePayVO {
 
     @ApiModelProperty(value = "任务描述(不超过25个字符)")
     @Getter @Setter private String remark;
+
+    @ApiModelProperty(value = "发布人昵称")
+    @Getter @Setter private String nick;
+
+    @ApiModelProperty(value = "发布人头像url")
+    @Getter @Setter private String avatar;
 }
