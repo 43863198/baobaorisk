@@ -167,7 +167,7 @@ public class PublishRedPackageTaskService {
                 ResponseEntity<byte[]> entity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class);
                 byte[] result = entity.getBody();
                 inputStream = new ByteArrayInputStream(result);
-                File filePath = new File("basePath");
+                File filePath = new File(basePath);
                 if (!filePath.mkdir())
                     filePath.mkdirs();
                 filename = Utility.generateUUID();
