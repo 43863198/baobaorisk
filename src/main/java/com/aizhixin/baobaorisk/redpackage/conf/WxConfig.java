@@ -23,6 +23,12 @@ public class WxConfig extends WXPayConfig {
     @Getter  private String mchID;
     @Value("${wx.apiKey}")
     @Getter  private String key;
+    @Value("${wx.createIp}")
+    @Getter  private String createIp;
+    @Value("${wx.notifyUrl}")
+    @Getter  private String notifyUrl;
+    @Value("${wx.tradeName}")
+    @Getter  private String tradeName;
 
 
     public WxConfig(@Value("${wx.certPath}") String certPath) throws Exception {

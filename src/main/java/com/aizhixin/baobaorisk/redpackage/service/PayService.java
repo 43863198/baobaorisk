@@ -5,6 +5,7 @@ import com.aizhixin.baobaorisk.common.wxpay.WXPay;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayUtil;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
+import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.manager.PayOrderManager;
@@ -37,20 +38,23 @@ public class PayService {
                 totalFee <= 0.01 || totalFee > 200 || null == num ||
                 num <= 0 || num > 100 || totalFee/num < 0.01) {
             log.info("Param validator fail.openId:{}, totoalFee:{}, num:{}", openId, totalFee, num);
-            vo.setReturn_code("FAIL");
+            vo.setReturn_code(WeixinContants.FAIL);
             return vo;
         }
         try {
             wxpay = new WXPay(wxConfig);
         } catch (Exception e) {
-            log.warn("Create order fail.{}", e);
+            log.warn("Weixin Order create  fail.{}", e);
+            vo.setReturn_code(WeixinContants.FAIL);
+            return vo;
         }
 
 
         PayOrder o = new PayOrder ();
         o.setTaskName(taskName);
-        o.setTradeName("包包大冒险-红包充值");//订单详情
+        o.setTradeName(wxConfig.getTradeName());//订单详情
         o.setTradeNo(Utility.generateUUID());//订单号
+        o.setTaskName(taskName);//红包要求的说明
         o.setTotalFee((int)(totalFee * 100));//红包金额
         o.setNum(num);//红包数量
         o.setOpenId(openId);
@@ -58,23 +62,23 @@ public class PayService {
         Map<String, String> data = new HashMap<>();
         data.put("body", o.getTradeName());
         data.put("out_trade_no", o.getTradeNo());
-        data.put("fee_type", "CNY");
+        data.put("fee_type", WeixinContants.FEE_TYPE);
         data.put("openid", o.getOpenId());
         data.put("total_fee", o.getTotalFee().toString());
-        data.put("spbill_create_ip", "114.67.48.139");
-        data.put("notify_url", "https://wx.aizhixin.com/open/v1/wxpay/notify");
-        data.put("trade_type", "JSAPI");
+        data.put("spbill_create_ip", wxConfig.getCreateIp());
+        data.put("notify_url", wxConfig.getNotifyUrl());
+        data.put("trade_type", WeixinContants.TRADE_TYPE);
 
         try {
             Map<String, String> resp = wxpay.unifiedOrder(data);
-            log.info("weixin prePay back msg:{}", resp);
-            if ("SUCCESS".equalsIgnoreCase(resp.get("return_code")) && "SUCCESS".equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
+            log.info("Weixin Order create prePay back msg:{}", resp);
+            if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) && WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
                 o.setPrepayId(resp.get("prepay_id"));
 
                 vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
-                vo.setSignType("MD5");
+                vo.setSignType(WeixinContants.SIGN_TYPE);
                 vo.setAppId(wxConfig.getAppID());
 
                 Map<String,String> repData = new HashMap<>();
@@ -88,29 +92,31 @@ public class PayService {
                 vo.setSign(sign);
                 payOrderManager.save(o);
             } else {
-                log.info("WEIXIN Order trade prepay fail. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
-                vo.setReturn_code("FAIL");
+                log.info("Weixin Order create prepay fail. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
+                vo.setReturn_code(WeixinContants.FAIL);
             }
         } catch (Exception e) {
-            log.warn("Invoke weixin pre pay fail.{}", e);
+            log.warn("Weixin Order create Invoke weixin pre pay fail.{}", e);
+            vo.setReturn_code(WeixinContants.FAIL);
         }
         return vo;
     }
 
 
     public void payNotify(String xml) throws Exception {
-        log.info("Weixin pay notify xml data:{}", xml);
         WXPay wxpay = new WXPay(wxConfig);
         Map<String, String> notifyMap = WXPayUtil.xmlToMap(xml);  // 转换成map
         if (wxpay.isPayResultNotifySignatureValid(notifyMap)) {
             // 签名正确 进行处理。
             // 暂不处理，注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户侧订单状态从退款改成支付成功
             String tradeNo = notifyMap.get("out_trade_no");
-            if ("SUCCESS".equalsIgnoreCase(notifyMap.get("result_code")) &&
-                    "SUCCESS".equalsIgnoreCase(notifyMap.get("return_code")) &&
+            if (WeixinContants.SUCCESS.equalsIgnoreCase(notifyMap.get("result_code")) &&
+                    WeixinContants.SUCCESS.equalsIgnoreCase(notifyMap.get("return_code")) &&
                     !StringUtils.isEmpty(tradeNo)) {
+                log.info("Weixin pay notify map data:{}", notifyMap);
                 createTask(tradeNo, notifyMap);//创建红包任务
             } else {
+//                log.info("Weixin pay notify xml data:{}", xml);
                 log.info("支付失败：{}", notifyMap);
             }
         } else {
