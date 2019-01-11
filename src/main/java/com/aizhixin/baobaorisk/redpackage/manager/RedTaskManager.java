@@ -1,10 +1,13 @@
 package com.aizhixin.baobaorisk.redpackage.manager;
 
+import com.aizhixin.baobaorisk.common.core.DataValidity;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.repository.RedTaskRepository;
+import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,12 +20,23 @@ public class RedTaskManager {
         return redTaskRepository.save(entity);
     }
 
-    @Transactional(readOnly = true)
     public RedTask findByTradeNo(String tradeNo) {
         List<RedTask> list = redTaskRepository.findByTradeNo(tradeNo);
         if (null != list && !list.isEmpty()) {
             return list.get(0);
         }
         return null;
+    }
+
+    public Page<RedTask> findByOpenId(Pageable pageable, String openId) {
+        return  redTaskRepository.findByOpenIdAndDeleteFlagOrderByCreatedDateDesc(pageable, openId, DataValidity.VALID.getState());
+    }
+
+    public PublishRedPackageCountVO countByOpenId(String openId) {
+        List<PublishRedPackageCountVO> list =  redTaskRepository.countByOpenIdAndDeleteFlag(openId, DataValidity.VALID.getState());
+        if (null != list && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return new PublishRedPackageCountVO(0, 0.0, 0);
     }
 }
