@@ -35,6 +35,18 @@ public class RedTask implements java.io.Serializable {
     @Column(name = "OPENID")
     @Getter @Setter private String openId;
 
+    @ApiModelProperty(value = "昵称")
+    @Column(name = "NICK")
+    @Getter @Setter private String nick;
+
+    @ApiModelProperty(value = "头像")
+    @Column(name = "AVATAR")
+    @Getter @Setter private String avatar;
+
+    @ApiModelProperty(value = "二维码key")
+    @Column(name = "PIC_NAME")
+    @Getter @Setter private String picname;
+
     @ApiModelProperty(value = "订单号")
     @Column(name = "TRADE_NO")
     @Getter @Setter private String tradeNo;

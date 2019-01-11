@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class RedTaskManager {
@@ -18,6 +19,11 @@ public class RedTaskManager {
 
     public RedTask save(RedTask entity) {
         return redTaskRepository.save(entity);
+    }
+
+    public RedTask findById(String id) {
+        Optional<RedTask> o = redTaskRepository.findById(id);
+        return o.orElseGet(null);
     }
 
     public RedTask findByTradeNo(String tradeNo) {

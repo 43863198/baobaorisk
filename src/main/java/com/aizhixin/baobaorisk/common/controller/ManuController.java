@@ -22,10 +22,16 @@ public class ManuController {
         throw new CommonException(22222, "未知异常");
     }
 
-//    @GetMapping(value = "/wx/code", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @ApiOperation(httpMethod = "GET", value = "小程序二维码生成测试", notes = "小程序二维码生成测试<br><br><b>@author zhen.pan</b>")
-//    public void codeWX(@ApiParam(value = "任务ID") @RequestParam(value = "id", required = false) String id,
-//            @ApiParam(value = "小程序路径") @RequestParam(value = "path", required = false) String path) {
-//        publishRedPackageTaskService.getWxCode(id, path, 0);
-//    }
+    @GetMapping(value = "/wx/code", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "小程序二维码生成测试", notes = "小程序二维码生成测试<br><br><b>@author zhen.pan</b>")
+    public void codeWX(@ApiParam(value = "任务ID") @RequestParam(value = "id", required = false) String id,
+            @ApiParam(value = "小程序路径") @RequestParam(value = "path", required = false) String path) {
+        publishRedPackageTaskService.getWxCode(id, path, 0);
+    }
+
+    @GetMapping(value = "/wx/userinfo/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "个人信息", notes = "个人信息<br><br><b>@author zhen.pan</b>")
+    public String userinfo(@ApiParam(value = "openId") @PathVariable String openId) {
+        return publishRedPackageTaskService.getUserInfo(openId);
+    }
 }
