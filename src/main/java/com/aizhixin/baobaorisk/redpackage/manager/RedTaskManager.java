@@ -37,6 +37,6 @@ public class RedTaskManager {
         if (null != list && !list.isEmpty()) {
             return list.get(0);
         }
-        return new PublishRedPackageCountVO(0, 0.0, 0);
+        return new PublishRedPackageCountVO(0L, 0.0, 0L);
     }
 }
