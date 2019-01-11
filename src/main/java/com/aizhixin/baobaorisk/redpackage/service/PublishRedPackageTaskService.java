@@ -41,7 +41,7 @@ public class PublishRedPackageTaskService {
             List<PublishRedPackageVO> list = new ArrayList<>();
             Map<String, PublishRedPackageVO> map = new HashMap<>();
             for (RedTask r : p.getContent()) {
-                PublishRedPackageVO v = new PublishRedPackageVO(r.getId(), r.getTaskName(), r.getTotalFee()/100.0, r.getNum(), r.getCreatedDate(), r.getRedStatus());
+                PublishRedPackageVO v = new PublishRedPackageVO(r.getId(), r.getTaskName(), null == r.getTotalFee()? 0.0: r.getTotalFee()/100.0, r.getNum(), r.getCreatedDate(), r.getRedStatus());
                 switch (r.getRedStatus()) {
                     case 20:
                         map.put(r.getId(), v);
