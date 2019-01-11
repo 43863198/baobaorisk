@@ -19,6 +19,8 @@ public class WxConfig extends WXPayConfig {
 
     @Value("${wx.appId}")
     @Getter  private String appID;
+    @Value("${wx.appSecret}")
+    @Getter  private String appSecret;
     @Value("${wx.mchId}")
     @Getter  private String mchID;
     @Value("${wx.apiKey}")

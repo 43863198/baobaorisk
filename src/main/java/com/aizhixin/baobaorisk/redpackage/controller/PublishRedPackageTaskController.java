@@ -3,10 +3,7 @@ package com.aizhixin.baobaorisk.redpackage.controller;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.redpackage.service.PayService;
 import com.aizhixin.baobaorisk.redpackage.service.PublishRedPackageTaskService;
-import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
-import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageVO;
-import com.aizhixin.baobaorisk.redpackage.vo.WxCreatePayVO;
-import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
+import com.aizhixin.baobaorisk.redpackage.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -42,5 +39,15 @@ public class PublishRedPackageTaskController {
     @ApiOperation(httpMethod = "GET", value = "已发布红包任务的合计值查询", notes = "已发布红包任务的合计值查询<br><br><b>@author zhen.pan</b>")
     public PublishRedPackageCountVO publish(@ApiParam(value = "openId", required = true) @PathVariable String openId) {
         return publishRedPackageTaskService.countPublish(openId);
+    }
+
+    @GetMapping(value = "/task/{taskId}/code", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "产生二维码文件", notes = "产生二维码文件<br><br><b>@author zhen.pan</b>")
+    public OneStrVO task(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId,
+                                         @ApiParam(value = "路径", required = true) @RequestParam(value = "path") String path,
+                                         @ApiParam(value = "二维码宽带") @RequestParam(value = "width", required = false) Integer width) {
+        OneStrVO vo = new OneStrVO ();
+        vo.setName(publishRedPackageTaskService.getWxCode(taskId, path, width));
+        return vo;
     }
 }

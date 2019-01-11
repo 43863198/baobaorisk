@@ -1,6 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.controller;
 
 import com.aizhixin.baobaorisk.redpackage.service.PayService;
+import com.aizhixin.baobaorisk.redpackage.service.PublishRedPackageTaskService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class PayNotifyController {
             "</xml>";
     @Autowired
     private PayService payService;
+    @Autowired
+    private PublishRedPackageTaskService publishRedPackageTaskService;
 
     @RequestMapping(value = "/notify")
     public void payNotify(HttpServletRequest request, HttpServletResponse response) {
@@ -52,4 +55,12 @@ public class PayNotifyController {
         }
     }
 
+
+    @RequestMapping(value = "/pic")
+    public void pic(HttpServletRequest request, HttpServletResponse response) {
+        String picname = request.getParameter("picname");
+        if (null != picname) {
+            publishRedPackageTaskService.outPic(picname, response);
+        }
+    }
 }
