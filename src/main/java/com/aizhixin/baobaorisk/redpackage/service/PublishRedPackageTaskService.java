@@ -207,7 +207,7 @@ public class PublishRedPackageTaskService {
 
     @Transactional(readOnly = true)
     public void outPic(String picname, HttpServletResponse response) {
-        File f = new File("basePath", picname + ".jpeg");
+        File f = new File(basePath, picname + ".jpeg");
         if (f.exists()) {
             response.setContentType("image/jpeg");
             FileInputStream is = null;
