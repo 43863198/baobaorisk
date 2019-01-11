@@ -165,6 +165,7 @@ public class PayService {
 
                 RedTask r = redTaskManager.findByTradeNo(tradeNo);
                 if (null != r) {
+                    r.setTotalFee(o.getCashFee());
                     r.setRedStatus(RedPackageTaskStatus.TASKING.getStateCode());
                     redTaskManager.save(r);
                 } else {
