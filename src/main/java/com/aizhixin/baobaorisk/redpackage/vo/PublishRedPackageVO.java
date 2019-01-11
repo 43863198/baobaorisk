@@ -1,12 +1,12 @@
 package com.aizhixin.baobaorisk.redpackage.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -31,7 +31,7 @@ public class PublishRedPackageVO {
     @Getter @Setter private String remark;
 
     @ApiModelProperty(value = "创建时间")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm",timezone="GMT+8")
     @Getter @Setter private Date createDate;
 
     @ApiModelProperty(value = "红包状态，任务创建(未支付完成)10，任务启动20，任务完成80")
