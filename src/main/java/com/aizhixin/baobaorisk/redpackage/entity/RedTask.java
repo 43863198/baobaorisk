@@ -1,7 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.entity;
 
 import com.aizhixin.baobaorisk.common.core.DataValidity;
-import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
+import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -20,7 +20,7 @@ import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
 @ApiModel(description="红包任务")
-//@Entity(name = "T_RED_TASK")
+@Entity(name = "T_RED_TASK")
 @NoArgsConstructor
 @ToString
 public class RedTask implements java.io.Serializable {
@@ -35,23 +35,15 @@ public class RedTask implements java.io.Serializable {
     @Column(name = "OPENID")
     @Getter @Setter private String openId;
 
-    @ApiModelProperty(value = "微信订单交易号")
-    @Column(name = "WX_TRADE_NO")
-    @Getter @Setter private String wxTradeNo;
-
-    @ApiModelProperty(value = "订单号/交易号")
+    @ApiModelProperty(value = "订单号")
     @Column(name = "TRADE_NO")
     @Getter @Setter private String tradeNo;
 
-    @ApiModelProperty(value = "交易名称")
-    @Column(name = "TRADE_NAME")
-    @Getter @Setter private String tradeName;
-
-    @ApiModelProperty(value = "任务名称")
+    @ApiModelProperty(value = "红包任务名称")
     @Column(name = "TASK_NAME")
     @Getter @Setter private String taskName;
 
-    @ApiModelProperty(value = "交易/订单金额(分)")
+    @ApiModelProperty(value = "红包金额(分)")
     @Column(name = "TOTAL_FEE")
     @Getter @Setter private Integer totalFee;
 
@@ -59,17 +51,9 @@ public class RedTask implements java.io.Serializable {
     @Column(name = "NUM")
     @Getter @Setter private Integer num;
 
-    @ApiModelProperty(value = "预付单号")
-    @Column(name = "PREPAY_ID")
-    @Getter @Setter private String prepayId;
-
-    @ApiModelProperty(value = "预支付随机码")
-    @Column(name = "NONCE_STR")
-    @Getter @Setter private String nonceStr;
-
-    @ApiModelProperty(value = "交易状态，预支付10，支付失败20，支付成功80")
-    @Column(name = "PAY_STATUS")
-    @Getter @Setter private int payStatus = TradeStatus.PrePay.getStateCode();
+    @ApiModelProperty(value = "红包状态，任务创建10，任务中20，任务完成80")
+    @Column(name = "RED_STATUS")
+    @Getter @Setter private int redStatus = RedPackageTaskStatus.CREATED.getStateCode();
 
     @ApiModelProperty(value = "创建时间")
     @CreatedDate
