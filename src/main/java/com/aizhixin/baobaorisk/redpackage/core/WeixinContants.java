@@ -10,4 +10,6 @@ public interface WeixinContants {
 
     String SUCCESS = "SUCCESS";//成功状态
     String FAIL = "FAIL";//失败状态
+
+    String BAOBAO_WX_TOKEN = "BAOBAO_WX_TOKEN";//微信token存放属性名称
 }
