@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
+@Transactional
 public class PayService {
     @Autowired
     private WxConfig wxConfig;
@@ -28,34 +29,6 @@ public class PayService {
     private PayOrderManager payOrderManager;
     @Autowired
     private RedTaskManager redTaskManager;
-
-    public void createOrder() {
-        WXPay wxpay = null;
-        try {
-            wxpay = new WXPay(wxConfig);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Map<String, String> data = new HashMap<>();
-        data.put("body", "包包大冒险-红包充值");
-        data.put("out_trade_no", "2019010810595900000013");
-        data.put("device_info", "");
-        data.put("fee_type", "CNY");
-        data.put("openid", "oIqbS5GGXlcHxC4W9RIsbTKY4zkg");
-        data.put("total_fee", "1");
-        data.put("spbill_create_ip", "114.67.48.139");
-        data.put("notify_url", "https://wx.aizhixin.com/open/v1/wxpay/notify");
-        data.put("trade_type", "JSAPI");
-//        data.put("product_id", "12");
-
-        try {
-            Map<String, String> resp = wxpay.unifiedOrder(data);
-            System.out.println(resp);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public WxPrePayVO createOrder(String openId, Double totalFee, Integer num, String taskName) {
         WXPay wxpay = null;
@@ -145,8 +118,8 @@ public class PayService {
             log.info("签名错误:{}", notifyMap);
         }
     }
-    @Transactional
-    public void createTask(String tradeNo, Map<String, String> notifyMap) {
+
+    private void createTask(String tradeNo, Map<String, String> notifyMap) {
         PayOrder o = payOrderManager.findByTradeNo(tradeNo);
         if (null != o) {
             if (TradeStatus.PrePaySuccess.getStateCode() != o.getPayStatus()) {//首次接收到成功支付回调
