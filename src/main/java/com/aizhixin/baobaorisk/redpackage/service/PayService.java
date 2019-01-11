@@ -31,9 +31,14 @@ public class PayService {
     @Autowired
     private RedTaskManager redTaskManager;
 
+    /**
+     * 创建红包订单任务（用于记录支付情况）
+     */
     public WxPrePayVO createOrder(String openId, Double totalFee, Integer num, String taskName) {
-        WXPay wxpay = null;
-        WxPrePayVO vo = new WxPrePayVO ();
+        WXPay wxpay;//微信预支付对象
+        WxPrePayVO vo = new WxPrePayVO ();//小程序用户支付确认所需数据对象
+
+        /***********************用户输入参数的简单验证***********************/
         if (StringUtils.isEmpty(openId) || null == totalFee ||
                 totalFee <= 0.01 || totalFee > 200 || null == num ||
                 num <= 0 || num > 100 || totalFee/num < 0.01) {
@@ -41,15 +46,8 @@ public class PayService {
             vo.setReturn_code(WeixinContants.FAIL);
             return vo;
         }
-        try {
-            wxpay = new WXPay(wxConfig);
-        } catch (Exception e) {
-            log.warn("Weixin Order create  fail.{}", e);
-            vo.setReturn_code(WeixinContants.FAIL);
-            return vo;
-        }
 
-
+        /***********************用户支付订单数据构造***********************/
         PayOrder o = new PayOrder ();
         o.setTaskName(taskName);
         o.setTradeName(wxConfig.getTradeName());//订单详情
@@ -59,6 +57,7 @@ public class PayService {
         o.setNum(num);//红包数量
         o.setOpenId(openId);
 
+        /***********************预支付数据构造及调用***********************/
         Map<String, String> data = new HashMap<>();
         data.put("body", o.getTradeName());
         data.put("out_trade_no", o.getTradeNo());
@@ -70,11 +69,16 @@ public class PayService {
         data.put("trade_type", WeixinContants.TRADE_TYPE);
 
         try {
-            Map<String, String> resp = wxpay.unifiedOrder(data);
+            wxpay = new WXPay(wxConfig);
+            Map<String, String> resp = wxpay.unifiedOrder(data);//调用微信预支付
             log.info("Weixin Order create prePay back msg:{}", resp);
-            if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) && WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code")) && !StringUtils.isEmpty(resp.get("prepay_id"))) {
+            if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) &&
+                    WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code")) &&
+                    !StringUtils.isEmpty(resp.get("prepay_id"))) {//预支付成功
                 o.setPrepayId(resp.get("prepay_id"));
+                payOrderManager.save(o);//支付订单数据保存
 
+                /***********************小程序用户支付确认所需数据对象数据构造***********************/
                 vo.setNonceStr(Utility.generateUUID());
                 vo.setPayPackage("prepay_id=" + o.getPrepayId());
                 vo.setTimestamp(Utility.getCurrentTimeStamp());
@@ -90,7 +94,6 @@ public class PayService {
                 String sign = WXPayUtil.generateSignature(repData,wxConfig.getKey()); //签名
                 vo.setAppId(null);
                 vo.setSign(sign);
-                payOrderManager.save(o);
             } else {
                 log.info("Weixin Order create prepay fail. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
                 vo.setReturn_code(WeixinContants.FAIL);
@@ -102,12 +105,13 @@ public class PayService {
         return vo;
     }
 
-
+    /**
+     * 支付扣款完成回调操作
+     */
     public void payNotify(String xml) throws Exception {
         WXPay wxpay = new WXPay(wxConfig);
         Map<String, String> notifyMap = WXPayUtil.xmlToMap(xml);  // 转换成map
-        if (wxpay.isPayResultNotifySignatureValid(notifyMap)) {
-            // 签名正确 进行处理。
+        if (wxpay.isPayResultNotifySignatureValid(notifyMap)) {//验证签名， 签名正确 进行处理。
             // 暂不处理，注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户侧订单状态从退款改成支付成功
             String tradeNo = notifyMap.get("out_trade_no");
             if (WeixinContants.SUCCESS.equalsIgnoreCase(notifyMap.get("result_code")) &&
@@ -116,19 +120,22 @@ public class PayService {
                 log.info("Weixin pay notify map data:{}", notifyMap);
                 createTask(tradeNo, notifyMap);//创建红包任务
             } else {
-//                log.info("Weixin pay notify xml data:{}", xml);
                 log.info("支付失败：{}", notifyMap);
             }
         } else {
-            // 签名错误，如果数据里没有sign字段，也认为是签名错误
-            log.info("签名错误:{}", notifyMap);
+            log.info("签名错误:{}", notifyMap);// 签名错误，如果数据里没有sign字段，也认为是签名错误
         }
     }
 
+    /**
+     * 更新支付订单数据，
+     * 正在创建红包任务
+     */
     private void createTask(String tradeNo, Map<String, String> notifyMap) {
         PayOrder o = payOrderManager.findByTradeNo(tradeNo);
         if (null != o) {
             if (TradeStatus.PrePaySuccess.getStateCode() != o.getPayStatus()) {//首次接收到成功支付回调
+                /***********************更新用户支付订单信息***********************/
                 o.setPayStatus(TradeStatus.PrePaySuccess.getStateCode());
                 o.setTransactionId(notifyMap.get("transaction_id"));
                 o.setTimeEnd(notifyMap.get("time_end"));
@@ -145,6 +152,7 @@ public class PayService {
                 }
                 payOrderManager.save(o);
 
+                /***********************创建红包任务信息***********************/
                 RedTask r = new RedTask();
                 r.setOpenId(o.getOpenId());//任务发起人
                 r.setTradeNo(o.getTradeNo());//订单号
