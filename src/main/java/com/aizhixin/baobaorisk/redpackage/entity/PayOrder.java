@@ -59,6 +59,22 @@ public class PayOrder implements java.io.Serializable {
     @Column(name = "PREPAY_ID")
     @Getter @Setter private String prepayId;
 
+    @ApiModelProperty(value = "微信支付订单号")
+    @Column(name = "TRANSACTION_ID")
+    @Getter @Setter private String transactionId;
+
+    @ApiModelProperty(value = "现金支付金额(分)")
+    @Column(name = "CASH_FEE")
+    @Getter @Setter private Integer cashFee;
+
+    @ApiModelProperty(value = "付款银行")
+    @Column(name = "BANK_TYPE")
+    @Getter @Setter private String bankType;
+
+    @ApiModelProperty(value = "支付完成时间")
+    @Column(name = "TIME_END")
+    @Getter @Setter private String timeEnd;
+
     @ApiModelProperty(value = "交易状态，预支付10，支付失败20，支付成功80")
     @Column(name = "PAY_STATUS")
     @Getter @Setter private int payStatus = TradeStatus.PrePay.getStateCode();

@@ -15,39 +15,38 @@ import java.io.InputStreamReader;
 @RequestMapping("/open/v1/wxpay")
 @Slf4j
 public class PayNotifyController {
-
+    private final static String SUCCESS_STR = "<xml>" +
+            "  <return_code><![CDATA[SUCCESS]]></return_code>" +
+            "  <return_msg><![CDATA[]]></return_msg>" +
+            "</xml>";
+    private final static String FAIL_STR = "<xml>" +
+            "  <return_code><![CDATA[FAIL]]></return_code>" +
+            "  <return_msg><![CDATA[支付数据处理失败]]></return_msg>" +
+            "</xml>";
     @Autowired
     private PayService payService;
 
     @RequestMapping(value = "/notify")
     public void payNotify(HttpServletRequest request, HttpServletResponse response) {
-        log.info("Call back invoke....");
-        String notifyData = "...."; // 支付结果通知的xml格式数据
-        StringBuilder tStringBuffer = new StringBuilder();
+        String rs = SUCCESS_STR;
         try {
+            StringBuilder xmlBuffer = new StringBuilder();
             BufferedReader tBufferedReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
-            String sTempOneLine = new String("");
-            while ((sTempOneLine = tBufferedReader.readLine()) != null) {
-                tStringBuffer.append(sTempOneLine);
+            String line;
+            while ((line = tBufferedReader.readLine()) != null) {
+                xmlBuffer.append(line);
             }
+            String notifyXmlData = xmlBuffer.toString();// 支付结果通知的xml格式数据
+            payService.payNotify(notifyXmlData);
         } catch (Exception e) {
-            log.warn("Call back fail msg:{}", e);
+            rs = FAIL_STR;
+            log.warn("Weixin pay notify process data fail msg:{}", e);
         }
-        notifyData = tStringBuffer.toString();
-        payService.payNotify(notifyData);
-        String rs = "<xml>" +
-                "  <return_code><![CDATA[SUCCESS]]></return_code>" +
-                "  <return_msg><![CDATA[]]></return_msg>" +
-                "</xml>";
-//        Map<String, String> map = new HashMap<>();
-//        map.put("return_code", "SUCCESS");
-//        map.put("return_msg", "");
         try {
-//            String rs = WXPayUtil.mapToXml(map);
             response.getOutputStream().write(rs.getBytes("UTF-8"));
             response.getOutputStream().flush();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Weixin pay notify out process result fail:{}", e);
         }
     }
 
