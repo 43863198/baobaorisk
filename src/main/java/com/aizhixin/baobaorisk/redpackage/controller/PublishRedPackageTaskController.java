@@ -59,7 +59,7 @@ public class PublishRedPackageTaskController {
     }
 
     @GetMapping(value = "/task/{taskId}/avatar", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(httpMethod = "GET", value = "获取红包任务详情", notes = "获取红包任务详情<br><br><b>@author zhen.pan</b>")
+    @ApiOperation(httpMethod = "GET", value = "获取红包任务发起人头像", notes = "获取红包任务发起人头像<br><br><b>@author zhen.pan</b>")
     public ResponseEntity<byte[]> taskAvatar(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId) {
         return publishRedPackageTaskService.getTaskAvatar(taskId);
     }
