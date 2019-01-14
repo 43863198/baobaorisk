@@ -1,3 +1,12 @@
+baobao:
+  pic:
+    qiniu:
+      accesskey: yEHtUCAddqj0IGbHqMjE2x7OsuMDRX782QAzsfhp
+      secretkey: 0OpkT4jdejTCetmyLECWMxtaUCQW-Xyhs_fy-kFt
+      bucket: wx-static
+      url: https://s2.aizhixin.com
+      tmpDir: tmp
+
 logging.level.com.aizhixin.baobaorisk: DEBUG
 sys:
   version: v0.1.0

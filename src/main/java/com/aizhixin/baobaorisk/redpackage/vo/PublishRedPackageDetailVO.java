@@ -30,11 +30,20 @@ public class PublishRedPackageDetailVO {
     @ApiModelProperty(value = "红包总金额")
     @Getter @Setter private double totalFee = 0.0;
 
+    @ApiModelProperty(value = "已抢红包总金额")
+    @Getter @Setter private double grapTotalFee = 0.0;
+
     @ApiModelProperty(value = "红包数量")
     @Getter @Setter private int num = 0;
 
-    @ApiModelProperty(value = "完成数量")
+    @ApiModelProperty(value = "审核通过数量（抢到红包的数量）")
     @Getter @Setter private int completeNum = 0;
+
+    @ApiModelProperty(value = "参与人数")
+    @Getter @Setter private int count = 0;
+
+    @ApiModelProperty(value = "审核数量")
+    @Getter @Setter private int verifyNum = 0;
 
     @ApiModelProperty(value = "任务描述")
     @Getter @Setter private String remark;
