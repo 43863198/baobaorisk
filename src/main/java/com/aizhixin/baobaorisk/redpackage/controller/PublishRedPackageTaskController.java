@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -55,5 +56,11 @@ public class PublishRedPackageTaskController {
     @ApiOperation(httpMethod = "GET", value = "获取红包任务详情", notes = "获取红包任务详情<br><br><b>@author zhen.pan</b>")
     public PublishRedPackageDetailVO taskDetails(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId) {
         return publishRedPackageTaskService.getPublishRedPackageTask(taskId);
+    }
+
+    @GetMapping(value = "/task/{taskId}/avatar", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "获取红包任务详情", notes = "获取红包任务详情<br><br><b>@author zhen.pan</b>")
+    public ResponseEntity<byte[]> taskAvatar(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId) {
+        return publishRedPackageTaskService.getTaskAvatar(taskId);
     }
 }

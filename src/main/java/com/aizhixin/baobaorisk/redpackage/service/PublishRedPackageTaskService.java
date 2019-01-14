@@ -1,5 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.service;
 
+import com.aizhixin.baobaorisk.common.core.ErrorCode;
+import com.aizhixin.baobaorisk.common.exception.CommonException;
 import com.aizhixin.baobaorisk.common.rest.RestUtil;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
@@ -20,16 +22,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -265,5 +271,40 @@ public class PublishRedPackageTaskService {
             vo.setStatus(r.getRedStatus());
         }
         return vo;
+    }
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> getTaskAvatar(String taskId) {
+        RedTask r = redTaskManager.findById(taskId);
+        if (null != r && !StringUtils.isEmpty(r.getAvatar())) {
+            DataInputStream din = null;
+            ByteArrayOutputStream os = null;
+            byte[] buff = new byte[8092];
+            int len = 0;
+            try {
+                URL url = new URL(r.getAvatar());
+                din = new DataInputStream(url.openStream());
+                os = new ByteArrayOutputStream();
+                while ((len = din.read(buff)) != -1) {
+                    os.write(buff, 0, len);
+                }
+                return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + URLEncoder.encode(Utility.generateUUID(), "UTF-8")).body(os.toByteArray());
+            } catch (IOException e) {
+                if (null != din) {
+                    try {
+                        din.close();
+                    } catch (IOException e1) {
+                        throw new CommonException(ErrorCode.SYSTEM_EXCEPTION_CODE.intValue(), null != e1 ? e1.getMessage() : "NulllPointException");
+                    }
+                }
+                if (null != os) {
+                    try {
+                        os.close();
+                    } catch (IOException e1) {
+                        throw new CommonException(ErrorCode.SYSTEM_EXCEPTION_CODE.intValue(), null != e1 ? e1.getMessage() : "NulllPointException");
+                    }
+                }
+            }
+        }
+        return ResponseEntity.ok().body(new byte[0]);
     }
 }
