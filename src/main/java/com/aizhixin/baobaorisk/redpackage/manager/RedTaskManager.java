@@ -23,7 +23,7 @@ public class RedTaskManager {
 
     public RedTask findById(String id) {
         Optional<RedTask> o = redTaskRepository.findById(id);
-        return o.orElseGet(null);
+        return o.orElse(null);
     }
 
     public RedTask findByTradeNo(String tradeNo) {

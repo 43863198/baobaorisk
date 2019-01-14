@@ -35,7 +35,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -287,7 +286,7 @@ public class PublishRedPackageTaskService {
                 while ((len = din.read(buff)) != -1) {
                     os.write(buff, 0, len);
                 }
-                return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=" + URLEncoder.encode(Utility.generateUUID(), "UTF-8")).body(os.toByteArray());
+                return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(os.toByteArray());
             } catch (IOException e) {
                 if (null != din) {
                     try {
