@@ -305,6 +305,6 @@ public class PublishRedPackageTaskService {
                 }
             }
         }
-        return ResponseEntity.ok().body(new byte[1]);
+        return ResponseEntity.ok().body(new byte[0]);
     }
 }
