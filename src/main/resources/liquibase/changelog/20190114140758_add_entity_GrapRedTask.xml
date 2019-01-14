@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <property name="now" value="now()" dbms="mysql,h2"/>
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="now" value="sysdate" dbms="oracle"/>
+    <!-- 抢红包任务表-->
+    <changeSet id="20190114140758" author="zhen.pan">
+		<preConditions onFail="MARK_RAN">
+	        <not>
+	            <tableExists tableName="T_GRAP_RED_TASK"/>
+	        </not>
+	    </preConditions>
+        <createTable tableName="T_GRAP_RED_TASK" remarks="抢红包任务表">
+            <column name="ID" type="VARCHAR(60)" autoIncrement="false">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="TASK_ID" type="VARCHAR(60)" remarks="红包任务ID"/>
+            <column name="OPENID" type="VARCHAR(60)" remarks="抢红包任务人的openid"/>
+            <column name="NICK" type="VARCHAR(80)" remarks="抢红包任务人的昵称"/>
+            <column name="AVATAR" type="VARCHAR(180)" remarks="抢红包任务人的头像"/>
+            <column name="PIC" type="VARCHAR(180)" remarks="抢红包任务图片路径或者key"/>
+            <column name="PIC_PUBLISH" type="INT(4)" remarks="抢红包任务图片是否向所有参与者公开:公开10，不公开20"/>
+            <column name="REMARK" type="VARCHAR(80)" remarks="抢红包任务文字内容"/>
+            <column name="TOTAL_FEE" type="int(11)" remarks="抢红包任务所获得的红包金额(分)"/>
+            <column name="VERIFY_DATE" type="DATETIME" remarks="审核日期"/>
+            <column name="TASK_STATUS" type="INT(4)" defaultValueNumeric="10" remarks="抢红包任务状态，待审核10，审核通过20，审核未通过30，任务失效80"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="最后一次修改时间"/>
+            <column name="CREATED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="创建时间"/>
+            <column name="DELETE_FLAG" type="INT(4)" defaultValueNumeric="0" remarks="删除标记(0正常,1删除)"/>
+        </createTable>
+        <createIndex indexName="idx_grap_red_task_task_id" tableName="T_GRAP_RED_TASK" unique="false">
+            <column name="TASK_ID" type="VARCHAR(60)"/>
+        </createIndex>
+        <createIndex indexName="idx_grap_red_task_openid" tableName="T_GRAP_RED_TASK" unique="false">
+            <column name="OPENID" type="VARCHAR(60)"/>
+        </createIndex>
+        <createIndex indexName="idx_grap_red_task_task_status" tableName="T_GRAP_RED_TASK" unique="false">
+            <column name="TASK_STATUS" type="INT(4"/>
+        </createIndex>
+        <createIndex indexName="idx_grap_red_task_delete_flag" tableName="T_GRAP_RED_TASK" unique="false">
+            <column name="DELETE_FLAG" type="INT(4)"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -10,10 +10,7 @@ import lombok.ToString;
 @ApiModel(description="状态通用表示")
 @NoArgsConstructor
 @ToString
-public class StatusVO {
-    @ApiModelProperty(value = "code")
-    @Getter @Setter private String code = "0";
-
-    @ApiModelProperty(value = "name")
-    @Getter @Setter private String name = "success";
+public class MsgVO {
+    @ApiModelProperty(value = "消息名称")
+    @Getter @Setter private String msg = "success";
 }

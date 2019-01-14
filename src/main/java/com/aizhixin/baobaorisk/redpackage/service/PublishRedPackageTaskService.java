@@ -2,13 +2,16 @@ package com.aizhixin.baobaorisk.redpackage.service;
 
 import com.aizhixin.baobaorisk.common.core.ErrorCode;
 import com.aizhixin.baobaorisk.common.exception.CommonException;
+import com.aizhixin.baobaorisk.common.qiniu.QiniuHelper;
 import com.aizhixin.baobaorisk.common.rest.RestUtil;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
 import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
+import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.manager.GrapRedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageDetailVO;
@@ -17,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
@@ -32,8 +34,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,8 +55,12 @@ public class PublishRedPackageTaskService {
     private RestUtil restUtil;
     @Autowired
     private ServletContext servletContext;
-    @Value("${pic.basePath}")
-    private String basePath;
+//    @Value("${pic.basePath}")
+//    private String basePath;
+    @Autowired
+    private QiniuHelper qiniuHelper;
+    @Autowired
+    private GrapRedTaskManager grapRedTaskManager;
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -148,8 +155,6 @@ public class PublishRedPackageTaskService {
     }
 
     public String getWxCode(String taskId, String path, Integer width) {
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
         String filename = null;
 
         try {
@@ -175,23 +180,8 @@ public class PublishRedPackageTaskService {
                 HttpEntity requestEntity = new HttpEntity(param, headers);
                 ResponseEntity<byte[]> entity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class);
                 byte[] result = entity.getBody();
-                inputStream = new ByteArrayInputStream(result);
-                File filePath = new File(basePath);
-                if (!filePath.mkdir())
-                    filePath.mkdirs();
-                filename = Utility.generateUUID();
-                File file = new File(filePath, filename + ".jpeg");
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                outputStream = new FileOutputStream(file);
-                inputStream = new ByteArrayInputStream(result);
-                int content;
-                byte[] buffer = new byte[1024 * 8];
-                while ((content = inputStream.read(buffer, 0, 1024)) != -1) {
-                    outputStream.write(buffer, 0, content);
-                }
-                outputStream.flush();
+                filename = "M" + Utility.generateUUID();//二维码标识
+                qiniuHelper.uploadQiniu(result, filename);
 
                 RedTask r = redTaskManager.findById(taskId);
                 if (null != r) {
@@ -201,53 +191,40 @@ public class PublishRedPackageTaskService {
             }
         }catch (Exception e){
             log.error("调用小程序生成微信永久小程序码URL接口异常: "+e.getMessage());
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return filename;
     }
 
-    @Transactional(readOnly = true)
-    public void outPic(String picname, HttpServletResponse response) {
-        File f = new File(basePath, picname + ".jpeg");
-        if (f.exists()) {
-            response.setContentType("image/jpeg");
-            FileInputStream is = null;
-            try {
-                is = new FileInputStream(f);
-                byte[] buf = new byte[8192];
-                int p = is.read(buf);
-                while (p > 0) {
-                    response.getOutputStream().write(buf, 0, p);
-                    p = is.read(buf);
-                }
-                response.getOutputStream().flush();
-            } catch (IOException e) {
-                log.warn("Out pic fail.", e);
-            } finally {
-                if (null != is) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        log.warn("Out pic fail.", e);
-                    }
-                }
-            }
-        }
-    }
+
+
+//    @Transactional(readOnly = true)
+//    public void outPic(String picname, HttpServletResponse response) {
+//        File f = new File(basePath, picname + ".jpeg");
+//        if (f.exists()) {
+//            response.setContentType("image/jpeg");
+//            FileInputStream is = null;
+//            try {
+//                is = new FileInputStream(f);
+//                byte[] buf = new byte[8192];
+//                int p = is.read(buf);
+//                while (p > 0) {
+//                    response.getOutputStream().write(buf, 0, p);
+//                    p = is.read(buf);
+//                }
+//                response.getOutputStream().flush();
+//            } catch (IOException e) {
+//                log.warn("Out pic fail.", e);
+//            } finally {
+//                if (null != is) {
+//                    try {
+//                        is.close();
+//                    } catch (IOException e) {
+//                        log.warn("Out pic fail.", e);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @Transactional(readOnly = true)
     public String getUserInfo(String openId) {
@@ -263,11 +240,17 @@ public class PublishRedPackageTaskService {
             vo.setAvatar(r.getAvatar());
             vo.setNick(r.getNick());
             vo.setCreateDate(r.getCreatedDate());
-            vo.setNum(r.getNum());
+            vo.setNum(null == r.getNum()? 0 : r.getNum());
             vo.setPicName(r.getPicname());
-            vo.setTotalFee(r.getTotalFee()/100.0);
+            vo.setTotalFee(null == r.getTotalFee() ? 0.0 : r.getTotalFee()/100.0);
             vo.setRemark(r.getTaskName());
             vo.setStatus(r.getRedStatus());
+
+            RedPackageCountDTO d = grapRedTaskManager.countGrapRedTask(taskId);
+            vo.setCompleteNum(d.getGrapNums());
+            vo.setGrapTotalFee(d.getTotalFee()/100.0);
+            vo.setVerifyNum(d.getVerifyNums());
+            vo.setCount(d.getCountNums());
         }
         return vo;
     }
