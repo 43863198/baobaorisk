@@ -22,11 +22,13 @@
             <column name="AVATAR" type="VARCHAR(180)" remarks="微信头像URL"/>
             <column name="NICK" type="VARCHAR(80)" remarks="昵称"/>
             <column name="PUBLISH_TASK_NUMS" type="int(11)" remarks="发布任务数"/>
-            <column name="PUBLISH_TOTAL_FEE" type="int(11)" remarks="发布任务总金额"/>
+            <column name="PUBLISH_TOTAL_FEE" type="int(11)" remarks="发布任务总金额(分)"/>
             <column name="PUBLISH_RED_NUMS" type="int(11)" remarks="发布红包数"/>
             <column name="GRAP_TASK_NUMS" type="int(11)" remarks="抢包参与任务数"/>
-            <column name="GRAP_TOTAL_FEE" type="int(11)" remarks="抢包任务总金额"/>
+            <column name="GRAP_TOTAL_FEE" type="int(11)" remarks="抢包任务总金额(分)"/>
             <column name="GRAP_RED_NUMS" type="int(11)" remarks="抢包成功数"/>
+            <column name="CASH_FEE" type="int(11)" remarks="提现总金额(分)"/>
+            <column name="DISCOUNT_FEE" type="int(11)" remarks="提现总手续费(分)"/>
             <column name="USER_STATUS" type="INT(4)" defaultValueNumeric="10" remarks="用户状态，预留，缺省值：10"/>
             <column name="LAST_MODIFIED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="最后一次修改时间"/>
             <column name="CREATED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="创建时间"/>

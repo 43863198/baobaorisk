@@ -4,6 +4,7 @@ import com.aizhixin.baobaorisk.common.core.PublicErrorCode;
 import com.aizhixin.baobaorisk.common.exception.CommonException;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
+import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.redpackage.core.PicPublishStatus;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
@@ -37,7 +38,9 @@ public class GrapRedPackageTaskService {
      * 参与抢红包任务创建
      * 表单数据提交，同时提交用户微信信息数据
      */
-    public String createGrapRedTask(String taskId, String picName, String remark, Integer isPublish, String nick, String openId, String avatar) {
+    public MsgVO createGrapRedTask(String taskId, String picName, String remark, Integer isPublish, String nick, String openId, String avatar) {
+        MsgVO vo = new MsgVO ();
+        /***************************************业务逻辑验证*********************************************/
         RedTask t = redTaskManager.findById(taskId);
         if (null == t) {
             throw new CommonException(PublicErrorCode.PARAM_EXCEPTION.getIntValue(), "根据ID没有查询到相应的红包任务");
@@ -52,6 +55,10 @@ public class GrapRedPackageTaskService {
         } else {
             isPublish = PicPublishStatus.OPEN.getStateCode();
         }
+        if (grapRedTaskManager.countByRedTaskAndOpenId(t, openId) > 0) {
+            throw new CommonException(PublicErrorCode.PARAM_EXCEPTION.getIntValue(), "不能重复参与");
+        }
+        /***************************************创建参与红包任务数*********************************************/
         GrapRedTask g = new GrapRedTask ();
         g.setRedTask(t);
         g.setAvatar(avatar);
@@ -60,8 +67,9 @@ public class GrapRedPackageTaskService {
         g.setPic(picName);
         g.setRemark(remark);
         g.setPicPublish(isPublish);
-        g = grapRedTaskManager.save(g);
+        grapRedTaskManager.save(g);
 
+        /***************************************更新用户任务数*********************************************/
         WeixinUser u = weixinUserManager.findByOpenId(openId);
         if (null == u) {
             u = new WeixinUser();
@@ -74,8 +82,7 @@ public class GrapRedPackageTaskService {
         u.setGrapRedNums(c.getReds());
         u.setGrapTaskNums(c.getTasks());
         weixinUserManager.save(u);
-
-        return g.getId();
+        return vo;
     }
 
     /**
@@ -98,7 +105,9 @@ public class GrapRedPackageTaskService {
     }
 
 
-
+    /**
+     * 总抢包任务统计
+     */
     @Transactional(readOnly = true)
     public GrapRedPackageCountVO countPublish(String openId) {
         WeixinUser user = weixinUserManager.findByOpenId(openId);

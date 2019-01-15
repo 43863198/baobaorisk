@@ -19,7 +19,7 @@ public class ToolController {
     @Autowired
     private QiniuHelper qiniuHelper;
 
-    @PutMapping(value = "/qiniu/token", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/qiniu/token/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "PUT", value = "七牛上传图片Token获取", notes = "七牛上传图片Token获取<br><br><b>@author zhen.pan</b>")
     public OneStrVO token(@ApiParam(value = "用户openId", required = true) @PathVariable String openId) {
         OneStrVO vo = new OneStrVO ();

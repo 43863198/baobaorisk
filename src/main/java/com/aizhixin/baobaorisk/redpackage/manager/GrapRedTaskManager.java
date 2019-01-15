@@ -57,6 +57,15 @@ public class GrapRedTaskManager {
         }
     }
 
+    public int countByRedTaskAndOpenId(RedTask redTask, String openId) {
+        Long c = grapRedTaskRepository.countByRedTaskAndOpenIdAndDeleteFlag(redTask, openId, DataValidity.VALID.getState());
+        if (null == c) {
+            return 0;
+        } else {
+            return c.intValue();
+        }
+    }
+
     public RedPackageCountDTO countGrapRedTask(String taskId) {
         List<RedPackageCountDTO> list = jdbcTemplate.query("SELECT COUNT(*) countNums, SUM(IF(t.TASK_STATUS = 20 OR t.TASK_STATUS = 30, 1, 0)) verifyNums, SUM(IF(t.TASK_STATUS = 20, 1, 0)) grapNums, SUM(IF(t.TASK_STATUS = 20, t.TOTAL_FEE, 0)) grapFee FROM t_grap_red_task t WHERE t.DELETE_FLAG=0 AND t.TASK_ID=?",
                 new Object[] {taskId},
