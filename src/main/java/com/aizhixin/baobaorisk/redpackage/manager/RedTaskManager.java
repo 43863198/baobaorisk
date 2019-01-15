@@ -1,9 +1,9 @@
 package com.aizhixin.baobaorisk.redpackage.manager;
 
 import com.aizhixin.baobaorisk.common.core.DataValidity;
+import com.aizhixin.baobaorisk.redpackage.dto.PublishPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.repository.RedTaskRepository;
-import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,11 +38,11 @@ public class RedTaskManager {
         return  redTaskRepository.findByOpenIdAndDeleteFlagOrderByCreatedDateDesc(pageable, openId, DataValidity.VALID.getState());
     }
 
-    public PublishRedPackageCountVO countByOpenId(String openId) {
-        List<PublishRedPackageCountVO> list =  redTaskRepository.countByOpenIdAndDeleteFlag(openId, DataValidity.VALID.getState());
+    public PublishPackageCountDTO countByOpenId(String openId) {
+        List<PublishPackageCountDTO> list =  redTaskRepository.countByOpenId(openId, DataValidity.VALID.getState());
         if (null != list && !list.isEmpty()) {
             return list.get(0);
         }
-        return new PublishRedPackageCountVO(0L, 0.0, 0L);
+        return new PublishPackageCountDTO(0L, 0L, 0L);
     }
 }

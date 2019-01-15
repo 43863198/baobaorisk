@@ -6,10 +6,14 @@ import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
 import com.aizhixin.baobaorisk.redpackage.core.PicPublishStatus;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
+import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.GrapRedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,8 @@ public class GrapRedPackageTaskService {
     private RedTaskManager redTaskManager;
     @Autowired
     private GrapRedTaskManager grapRedTaskManager;
+    @Autowired
+    private WeixinUserManager weixinUserManager;
 
     /**
      * 参与抢红包任务创建
@@ -55,6 +61,20 @@ public class GrapRedPackageTaskService {
         g.setRemark(remark);
         g.setPicPublish(isPublish);
         g = grapRedTaskManager.save(g);
+
+        WeixinUser u = weixinUserManager.findByOpenId(openId);
+        if (null == u) {
+            u = new WeixinUser();
+            u.setOpenId(openId);
+        }
+        u.setAvatar(avatar);
+        u.setNick(nick);
+        GrapPackageCountDTO c = grapRedTaskManager.countByOpenId(openId);
+        u.setGrapTotalFee(c.getFees());
+        u.setGrapRedNums(c.getReds());
+        u.setGrapTaskNums(c.getTasks());
+        weixinUserManager.save(u);
+
         return g.getId();
     }
 
@@ -75,5 +95,17 @@ public class GrapRedPackageTaskService {
             page.getPage().setTotalPages(p.getTotalPages());
         }
         return page;
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public GrapRedPackageCountVO countPublish(String openId) {
+        WeixinUser user = weixinUserManager.findByOpenId(openId);
+        if (null != user) {
+            return new GrapRedPackageCountVO(user.getNick(), user.getAvatar(), user.getGrapTaskNums(), user.getGrapTotalFee() / 100.0, user.getGrapRedNums());
+        } else {
+            return new GrapRedPackageCountVO("", "", 0L, 0.0, 0L);
+        }
     }
 }

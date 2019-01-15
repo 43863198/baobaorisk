@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/open/v1")
-@Api(description = "红包及支付相关操作API")
+@Api(description = "发布红包及支付相关操作API")
 public class PublishRedPackageTaskController {
     @Autowired
     private PayService payService;

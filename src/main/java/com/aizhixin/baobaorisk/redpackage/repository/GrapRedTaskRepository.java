@@ -1,6 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.repository;
 
 
+import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
@@ -10,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 
 public interface GrapRedTaskRepository extends JpaRepository<GrapRedTask, String> {
@@ -24,5 +27,10 @@ public interface GrapRedTaskRepository extends JpaRepository<GrapRedTask, String
     void updateByRedTaskAndTaskStatusAndDeleteFlag(@Param(value = "redTask") RedTask redTask, @Param(value = "taskStatus") int taskStatus, @Param(value = "deleteFlag") int deleteFlag);
 
     @Query("SELECT new com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO(t.redTask.nick, t.redTask.avatar, t.redTask.taskName, t.redTask.createdDate, t.totalFee, t.taskStatus)  FROM #{#entityName} t WHERE t.openId = :openId AND t.deleteFlag = :deleteFlag ORDER BY t.createdDate")
-    Page<GrapRedPackageTaskVO> findByOpenIdAndDeleteFlagOrderByCreatedDate(Pageable pageable, String openId, Integer deleteFlag);
+    Page<GrapRedPackageTaskVO> findByOpenIdAndDeleteFlagOrderByCreatedDate(Pageable pageable, @Param(value = "openId") String openId, @Param(value = "deleteFlag") Integer deleteFlag);
+
+    Long countByOpenIdAndDeleteFlag(String openId, int deleteFlag);
+
+    @Query("SELECT new com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO(SUM(t.totalFee), COUNT(*)) FROM #{#entityName} t WHERE t.openId = :openId AND t.taskStatus = :taskStatus AND t.deleteFlag = :deleteFlag")
+    List<GrapPackageCountDTO> countByOpenIdAndTaskStatusAndDeleteFlag(@Param(value = "openId") String openId, @Param(value = "taskStatus") int taskStatus, @Param(value = "deleteFlag") int deleteFlag);
 }

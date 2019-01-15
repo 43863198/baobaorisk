@@ -12,11 +12,14 @@ import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.GrapRedPackageStatus;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
+import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.GrapRedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageListVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageDetailVO;
@@ -58,12 +61,12 @@ public class PublishRedPackageTaskService {
     private RestUtil restUtil;
     @Autowired
     private ServletContext servletContext;
-//    @Value("${pic.basePath}")
-//    private String basePath;
     @Autowired
     private QiniuHelper qiniuHelper;
     @Autowired
     private GrapRedTaskManager grapRedTaskManager;
+    @Autowired
+    private WeixinUserManager weixinUserManager;
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -86,10 +89,6 @@ public class PublishRedPackageTaskService {
             log.warn("调用微信获取访问token失败", e);
         }
         return accessToken;
-    }
-
-    private String getUserInfo(String accessToken, String openId) {
-        return restUtil.get("https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken + "&openid=" + openId + "&lang=zh_CN", null);
     }
 
     /**
@@ -154,7 +153,12 @@ public class PublishRedPackageTaskService {
 
     @Transactional(readOnly = true)
     public PublishRedPackageCountVO countPublish(String openId) {
-        return redTaskManager.countByOpenId(openId);
+        WeixinUser user = weixinUserManager.findByOpenId(openId);
+        if (null != user) {
+            return new PublishRedPackageCountVO(user.getNick(), user.getAvatar(), user.getPublishTaskNums(), user.getPublishTotalFee() / 100.0, user.getPublishRedNums());
+        } else {
+            return new PublishRedPackageCountVO("", "", 0L, 0.0, 0L);
+        }
     }
 
     public String getWxCode(String taskId, String path, Integer width) {
@@ -196,11 +200,6 @@ public class PublishRedPackageTaskService {
             log.error("调用小程序生成微信永久小程序码URL接口异常: "+e.getMessage());
         }
         return filename;
-    }
-
-    @Transactional(readOnly = true)
-    public String getUserInfo(String openId) {
-        return getUserInfo(getWeixinAccessToken(), openId);
     }
 
     @Transactional(readOnly = true)
@@ -346,6 +345,16 @@ public class PublishRedPackageTaskService {
         g.setTaskStatus(verifyStatus);
         g.setVerifyDate(new Date());
         grapRedTaskManager.save(g);
+
+        /**********************************************更新用户已发布数据**************************************************/
+        WeixinUser u = weixinUserManager.findByOpenId(openId);
+        if (null != u) {
+            GrapPackageCountDTO c = grapRedTaskManager.countByOpenId(openId);
+            u.setGrapTotalFee(c.getFees());
+            u.setGrapRedNums(c.getReds());
+            u.setGrapTaskNums(c.getTasks());
+            weixinUserManager.save(u);
+        }
         if (compelete) {
             t.setRedStatus(RedPackageTaskStatus.COMPELETE.getStateCode());
             redTaskManager.save(t);
