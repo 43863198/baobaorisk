@@ -1,6 +1,7 @@
 package com.aizhixin.baobaorisk.redpackage.controller;
 
 import com.aizhixin.baobaorisk.common.tools.PageData;
+import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.redpackage.service.PayService;
 import com.aizhixin.baobaorisk.redpackage.service.PublishRedPackageTaskService;
 import com.aizhixin.baobaorisk.redpackage.vo.*;
@@ -62,5 +63,23 @@ public class PublishRedPackageTaskController {
     @ApiOperation(httpMethod = "GET", value = "获取红包任务发起人头像", notes = "获取红包任务发起人头像<br><br><b>@author zhen.pan</b>")
     public ResponseEntity<byte[]> taskAvatar(@ApiParam(value = "任务ID", required = true) @PathVariable String taskId) {
         return publishRedPackageTaskService.getTaskAvatar(taskId);
+    }
+
+    @GetMapping(value = "/publish/{openId}/task/{taskId}/{pageNumber}/{pageSize}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "抢红包参与者信息", notes = "抢红包参与者信息，按照参与时间排序<br><br><b>@author zhen.pan</b>")
+    public PageData<GrapRedPackageListVO> publish(@ApiParam(value = "openId", required = true) @PathVariable String openId,
+                                            @ApiParam(value = "taskId", required = true) @PathVariable String taskId,
+                                            @ApiParam(value = "pageNumber", required = true) @PathVariable Integer pageNumber,
+                                            @ApiParam(value = "pageSize", required = true) @PathVariable Integer pageSize) {
+        return publishRedPackageTaskService.queryGrapTask(openId, taskId, pageNumber, pageSize);
+    }
+
+    @PutMapping(value = "/publish/{openId}/task/{taskId}/grap/{grapId}/{verifyStatus}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "PUT", value = "审核参与通过或不通过", notes = "审核参与通过或不通过<br><br><b>@author zhen.pan</b>")
+    public MsgVO doVerify(@ApiParam(value = "任务发起人openId", required = true) @PathVariable String openId,
+                         @ApiParam(value = "红包任务taskId", required = true) @PathVariable String taskId,
+                         @ApiParam(value = "抢包任务grapId", required = true) @PathVariable String grapId,
+                         @ApiParam(value = "通过20，不通过30", required = true) @PathVariable Integer verifyStatus) {
+        return publishRedPackageTaskService.doVerifyGrapTask(openId, taskId, grapId, verifyStatus);
     }
 }

@@ -6,13 +6,18 @@ import com.aizhixin.baobaorisk.common.qiniu.QiniuHelper;
 import com.aizhixin.baobaorisk.common.rest.RestUtil;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
+import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
+import com.aizhixin.baobaorisk.redpackage.core.GrapRedPackageStatus;
+import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
+import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.manager.GrapRedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageListVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageDetailVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageVO;
@@ -38,10 +43,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @Slf4j
@@ -195,37 +198,6 @@ public class PublishRedPackageTaskService {
         return filename;
     }
 
-
-
-//    @Transactional(readOnly = true)
-//    public void outPic(String picname, HttpServletResponse response) {
-//        File f = new File(basePath, picname + ".jpeg");
-//        if (f.exists()) {
-//            response.setContentType("image/jpeg");
-//            FileInputStream is = null;
-//            try {
-//                is = new FileInputStream(f);
-//                byte[] buf = new byte[8192];
-//                int p = is.read(buf);
-//                while (p > 0) {
-//                    response.getOutputStream().write(buf, 0, p);
-//                    p = is.read(buf);
-//                }
-//                response.getOutputStream().flush();
-//            } catch (IOException e) {
-//                log.warn("Out pic fail.", e);
-//            } finally {
-//                if (null != is) {
-//                    try {
-//                        is.close();
-//                    } catch (IOException e) {
-//                        log.warn("Out pic fail.", e);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     @Transactional(readOnly = true)
     public String getUserInfo(String openId) {
         return getUserInfo(getWeixinAccessToken(), openId);
@@ -288,5 +260,105 @@ public class PublishRedPackageTaskService {
             }
         }
         return ResponseEntity.ok().body(new byte[0]);
+    }
+
+    /**
+     * 参与抢红包参与信息
+     */
+    @Transactional(readOnly = true)
+    public PageData<GrapRedPackageListVO> queryGrapTask(String openId, String taskId, Integer pageNumber, Integer pageSize) {
+        PageData<GrapRedPackageListVO> page = new PageData<>();
+        PageRequest pageRequest = PageUtil.createNoErrorPageRequest(pageNumber, pageSize);
+        page.getPage().setPageNumber(pageRequest.getPageNumber() + 1);
+        page.getPage().setPageSize(pageRequest.getPageSize());
+        Page<GrapRedTask> p = grapRedTaskManager.findByRedTaskId(pageRequest, taskId);
+        if (null != p) {
+            page.getPage().setTotalElements(p.getTotalElements());
+            page.getPage().setTotalPages(p.getTotalPages());
+            List<GrapRedPackageListVO> list = new ArrayList<>();
+            for (GrapRedTask r : p.getContent()) {
+                GrapRedPackageListVO v = new GrapRedPackageListVO(r);
+                list.add(v);
+            }
+            page.setData(list);
+        }
+        return page;
+    }
+
+    /**
+     * 计算随机红包
+     */
+    private int getRadomRedPackage(int remainSize, int remainAmount) {
+        if (remainSize <= 1) {
+            return remainAmount;
+        }
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int red = r.nextInt(remainAmount * 2 /remainSize);
+        if (red <= 0) {
+            return 1;
+        }
+        return red;
+    }
+
+    public MsgVO doVerifyGrapTask(String openId, String taskId, String grapId, Integer verifyStatus) {
+        MsgVO v = new MsgVO ();
+        if (GrapRedPackageStatus.PASSED.getStateCode() != verifyStatus && GrapRedPackageStatus.NOT_PASSING.getStateCode() != verifyStatus) {
+            v.setMsg("审核状态必须是：通过20，不通过30");
+            return v;
+        }
+        RedTask t = redTaskManager.findById(taskId);
+        if (null == t) {
+            v.setMsg("查找不到红包任务");
+            return v;
+        }
+        if (!openId.equalsIgnoreCase(t.getOpenId())) {
+            v.setMsg("不是红包发起人，无权审批");
+            return v;
+        }
+        if (RedPackageTaskStatus.COMPELETE.getStateCode() == t.getRedStatus()) {
+            v.setMsg("红包已经抢完");
+            return v;
+        }
+        GrapRedTask g = grapRedTaskManager.findById(grapId);
+        if (null == g) {
+            v.setMsg("查找不到抢红包任务");
+            return v;
+        }
+        if (null != g.getRedTask()) {
+            if (!taskId.equals(g.getRedTask().getId())) {
+                v.setMsg("发包和抢包任务不匹配任务");
+                return v;
+            }
+        }
+        boolean compelete = false;
+        if (GrapRedPackageStatus.PASSED.getStateCode() == verifyStatus) {
+            //验证红包数量，计算红包金额
+            RedPackageCountDTO c = grapRedTaskManager.countGrapRedTask(taskId);
+            if (t.getNum() >= c.getGrapNums() || t.getTotalFee() - c.getTotalFee() <= 0) {
+                v.setMsg("红包已经抢完");
+                return v;
+            }
+            g.setTotalFee(getRadomRedPackage(t.getNum() - c.getGrapNums(), t.getTotalFee() - c.getTotalFee()));
+            if (c.getGrapNums() + 1 >= t.getNum()) {
+                compelete = false;
+            }
+        }
+        g.setTaskStatus(verifyStatus);
+        g.setVerifyDate(new Date());
+        grapRedTaskManager.save(g);
+        if (compelete) {
+            t.setRedStatus(RedPackageTaskStatus.COMPELETE.getStateCode());
+            redTaskManager.save(t);
+//            Page<GrapRedTask> p = grapRedTaskManager.findByRedTask(PageUtil.createNoErrorPageRequest(1, Integer.MAX_VALUE), t);
+//            List<GrapRedTask> list = p.getContent();
+//            for (GrapRedTask gr : list) {
+//                if (GrapRedPackageStatus.WAITING.getStateCode() == gr.getTaskStatus()) {
+//                    gr.setTaskStatus(GrapRedPackageStatus.INVALID.getStateCode());
+//                }
+//            }
+//            grapRedTaskManager.saveAll(list);
+            grapRedTaskManager.doInvalidGrapTask(t);//失效未审核的抢包任务
+        }
+        return v;
     }
 }

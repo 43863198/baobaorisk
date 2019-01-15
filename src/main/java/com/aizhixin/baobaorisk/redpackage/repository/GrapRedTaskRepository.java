@@ -6,6 +6,9 @@ import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 
 public interface GrapRedTaskRepository extends JpaRepository<GrapRedTask, String> {
@@ -13,10 +16,9 @@ public interface GrapRedTaskRepository extends JpaRepository<GrapRedTask, String
 
     Page<GrapRedTask> findByRedTask_IdAndDeleteFlagOrderByCreatedDate(Pageable pageable, String taskId, Integer deleteFlag);
 
-//    @Query("select new com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO(count(*), sum(IF(20 = taskStatus OR 30 == taskStatus, 1, 0)), sum(IF(20 = taskStatus, 1, 0)), sum(t.totalFee)) from #{#entityName} t where t.redTask = :redTask and t.deleteFlag = :deleteFlag")
-//    List<RedPackageCountDTO> countGrapRedNumByRedTaskAndDeleteFlag(@Param(value = "redTask") RedTask redTask, @Param(value = "deleteFlag") int deleteFlag);
-//
-//    @Query("select new com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO(count(*), sum(IF(20 = taskStatus OR 30 == taskStatus, 1, 0)), sum(IF(20 = taskStatus, 1, 0)), sum(t.totalFee)) from #{#entityName} t where t.redTask.id = :taskId and t.deleteFlag = :deleteFlag")
-//    List<RedPackageCountDTO> countGrapRedNumByRedTaskIdAndDeleteFlag(@Param(value = "taskId") String taskId, @Param(value = "deleteFlag") int deleteFlag);
+    Long countByRedTaskAndTaskStatusAndDeleteFlag(RedTask redTask, int taskStatus, int deleteFlag);
 
+    @Modifying
+    @Query("UPDATE #{#entityName} t SET t.taskStatus = 80 WHERE t.redTask = :redTask AND t.taskStatus = :taskStatus AND t.deleteFlag = :deleteFlag")
+    void updateByRedTaskAndTaskStatusAndDeleteFlag(@Param(value = "redTask") RedTask redTask, @Param(value = "taskStatus") int taskStatus, @Param(value = "deleteFlag") int deleteFlag);
 }
