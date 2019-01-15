@@ -6,6 +6,7 @@ import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.repository.GrapRedTaskRepository;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +30,8 @@ public class GrapRedTaskManager {
         return grapRedTaskRepository.save(entity);
     }
 
-    public List<GrapRedTask> saveAll(List<GrapRedTask> entityies) {
-        return grapRedTaskRepository.saveAll(entityies);
+    public List<GrapRedTask> saveAll(List<GrapRedTask> entity) {
+        return grapRedTaskRepository.saveAll(entity);
     }
 
     public GrapRedTask findById(String id) {
@@ -69,5 +70,9 @@ public class GrapRedTaskManager {
 
     public void doInvalidGrapTask(RedTask redTask) {
         grapRedTaskRepository.updateByRedTaskAndTaskStatusAndDeleteFlag(redTask, GrapRedPackageStatus.INVALID.getStateCode(), DataValidity.VALID.getState());
+    }
+
+    public Page<GrapRedPackageTaskVO> queryGrapTask(Pageable pageable, String openId) {
+        return grapRedTaskRepository.findByOpenIdAndDeleteFlagOrderByCreatedDate(pageable, openId, DataValidity.VALID.getState());
     }
 }
