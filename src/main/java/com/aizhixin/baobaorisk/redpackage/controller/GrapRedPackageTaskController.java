@@ -3,6 +3,7 @@ package com.aizhixin.baobaorisk.redpackage.controller;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.redpackage.service.GrapRedPackageTaskService;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageVO;
 import io.swagger.annotations.Api;
@@ -29,6 +30,12 @@ public class GrapRedPackageTaskController {
             vo.setMsg("fail");
         }
         return vo;
+    }
+
+    @GetMapping(value = "/{openId}/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "抢包任务的合计值查询", notes = "抢包任务的合计值查询<br><br><b>@author zhen.pan</b>")
+    public GrapRedPackageCountVO publish(@ApiParam(value = "openId", required = true) @PathVariable String openId) {
+        return grapRedPackageTaskService.countPublish(openId);
     }
 
     @GetMapping(value = "/{openId}/{pageNumber}/{pageSize}", produces = MediaType.APPLICATION_JSON_VALUE)

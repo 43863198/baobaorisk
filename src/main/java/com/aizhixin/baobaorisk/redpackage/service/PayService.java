@@ -7,10 +7,13 @@ import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
+import com.aizhixin.baobaorisk.redpackage.dto.PublishPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.PayOrderManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
 import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,8 @@ public class PayService {
     private PayOrderManager payOrderManager;
     @Autowired
     private RedTaskManager redTaskManager;
+    @Autowired
+    private WeixinUserManager weixinUserManager;
 
     /**
      * 创建红包订单任务（用于记录支付情况）
@@ -71,6 +76,15 @@ public class PayService {
         data.put("notify_url", wxConfig.getNotifyUrl());
         data.put("trade_type", WeixinContants.TRADE_TYPE);
 
+        /***********************更新用户信息***********************/
+        WeixinUser u = weixinUserManager.findByOpenId(openId);
+        if (null == u) {
+            u = new WeixinUser();
+            u.setOpenId(openId);
+        }
+        u.setAvatar(avatar);
+        u.setNick(nick);
+
         try {
             wxpay = new WXPay(wxConfig);
             Map<String, String> resp = wxpay.unifiedOrder(data);//调用微信预支付
@@ -92,6 +106,15 @@ public class PayService {
                 r.setNick(o.getNick());
                 r = redTaskManager.save(r);
                 vo.setPublishTaskId(r.getId());//红包任务ID
+
+                /***********************************用户信息发布任务统计*************************************/
+                PublishPackageCountDTO d = redTaskManager.countByOpenId(openId);
+                if (null != d) {
+                    u.setPublishRedNums(d.getReds());
+                    u.setPublishTaskNums(d.getTasks());
+                    u.setPublishTotalFee(d.getFees());
+                }
+                weixinUserManager.save(u);
 
                 /***********************小程序用户支付确认所需数据对象数据构造***********************/
                 vo.setNonceStr(Utility.generateUUID());
@@ -172,6 +195,18 @@ public class PayService {
                     r.setTotalFee(o.getCashFee());
                     r.setRedStatus(RedPackageTaskStatus.TASKING.getStateCode());
                     redTaskManager.save(r);
+
+                    /***********************************用户信息发布任务统计*************************************/
+                    WeixinUser u = weixinUserManager.findByOpenId(r.getOpenId());
+                    if (null != u) {
+                        PublishPackageCountDTO d = redTaskManager.countByOpenId(r.getOpenId());
+                        if (null != d) {
+                            u.setPublishRedNums(d.getReds());
+                            u.setPublishTaskNums(d.getTasks());
+                            u.setPublishTotalFee(d.getFees());
+                        }
+                        weixinUserManager.save(u);
+                    }
                 } else {
                     log.warn("订单号:({})无对应的发布红包数据", tradeNo);
                 }

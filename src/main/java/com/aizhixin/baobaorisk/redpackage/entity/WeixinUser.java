@@ -18,8 +18,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
-@ApiModel(description="微信用户信息")
-//@Entity(name = "T_WEIXIN_USER")
+@ApiModel(description="微信用户及红包金额统计信息")
+@Entity(name = "T_WEIXIN_USER")
 @NoArgsConstructor
 @ToString
 public class WeixinUser implements java.io.Serializable {
@@ -34,10 +34,6 @@ public class WeixinUser implements java.io.Serializable {
     @Column(name = "OPEN_ID")
     @Getter @Setter private String openId;
 
-    @ApiModelProperty(value = "unionId")
-    @Column(name = "UNIONID")
-    @Getter @Setter private String unionId;
-
     @ApiModelProperty(value = "微信头像URL")
     @Column(name = "AVATAR")
     @Getter @Setter private String avatar;
@@ -46,25 +42,33 @@ public class WeixinUser implements java.io.Serializable {
     @Column(name = "NICK")
     @Getter @Setter private String nick;
 
-    @ApiModelProperty(value = "性别")
-    @Column(name = "GENDER")
-    @Getter @Setter private String gender;
+    @ApiModelProperty(value = "发布任务数")
+    @Column(name = "PUBLISH_TASK_NUMS")
+    @Getter @Setter private Long publishTaskNums;
 
-    @ApiModelProperty(value = "城市")
-    @Column(name = "CITY")
-    @Getter @Setter private String city;
+    @ApiModelProperty(value = "发布任务总金额")
+    @Column(name = "PUBLISH_TOTAL_FEE")
+    @Getter @Setter private Long publishTotalFee;
 
-    @ApiModelProperty(value = "省")
-    @Column(name = "PROVINCE")
-    @Getter @Setter private String province;
+    @ApiModelProperty(value = "发布红包数")
+    @Column(name = "PUBLISH_RED_NUMS")
+    @Getter @Setter private Long publishRedNums;
 
-    @ApiModelProperty(value = "国家")
-    @Column(name = "COUNTRY")
-    @Getter @Setter private String country;
+    @ApiModelProperty(value = "抢包参与任务数")
+    @Column(name = "GRAP_TASK_NUMS")
+    @Getter @Setter private Long grapTaskNums;
 
-    @ApiModelProperty(value = "语言")
-    @Column(name = "LANGUAGE")
-    @Getter @Setter private String language;
+    @ApiModelProperty(value = "抢包任务总金额")
+    @Column(name = "GRAP_TOTAL_FEE")
+    @Getter @Setter private Long grapTotalFee;
+
+    @ApiModelProperty(value = "抢包成功数")
+    @Column(name = "GRAP_RED_NUMS")
+    @Getter @Setter private Long grapRedNums;
+
+    @ApiModelProperty(value = "用户状态，预留，缺省值：10")
+    @Column(name = "USER_STATUS")
+    @Getter @Setter private Integer userStatus = 10;
 
     @ApiModelProperty(value = "创建时间")
     @CreatedDate

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <property name="now" value="now()" dbms="mysql,h2"/>
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="now" value="sysdate" dbms="oracle"/>
+    <!-- 微信用户及红包金额统计信息表-->
+    <changeSet id="20190115142512" author="zhen.pan">
+		<preConditions onFail="MARK_RAN">
+	        <not>
+	            <tableExists tableName="T_WEIXIN_USER"/>
+	        </not>
+	    </preConditions>
+        <createTable tableName="T_WEIXIN_USER" remarks="微信用户及红包金额统计信息表">
+            <column name="ID" type="VARCHAR(60)" autoIncrement="false">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="OPENID" type="VARCHAR(60)" remarks="OPENID"/>
+            <column name="AVATAR" type="VARCHAR(180)" remarks="微信头像URL"/>
+            <column name="NICK" type="VARCHAR(80)" remarks="昵称"/>
+            <column name="PUBLISH_TASK_NUMS" type="int(11)" remarks="发布任务数"/>
+            <column name="PUBLISH_TOTAL_FEE" type="int(11)" remarks="发布任务总金额"/>
+            <column name="PUBLISH_RED_NUMS" type="int(11)" remarks="发布红包数"/>
+            <column name="GRAP_TASK_NUMS" type="int(11)" remarks="抢包参与任务数"/>
+            <column name="GRAP_TOTAL_FEE" type="int(11)" remarks="抢包任务总金额"/>
+            <column name="GRAP_RED_NUMS" type="int(11)" remarks="抢包成功数"/>
+            <column name="USER_STATUS" type="INT(4)" defaultValueNumeric="10" remarks="用户状态，预留，缺省值：10"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="最后一次修改时间"/>
+            <column name="CREATED_DATE" type="DATETIME" defaultValueDate="${now}" remarks="创建时间"/>
+            <column name="DELETE_FLAG" type="INT(4)" defaultValueNumeric="0" remarks="删除标记(0正常,1删除)"/>
+        </createTable>
+        <createIndex indexName="idx_weixin_user_openid" tableName="T_WEIXIN_USER" unique="false">
+            <column name="OPENID" type="VARCHAR(60)"/>
+        </createIndex>
+        <createIndex indexName="idx_weixin_user_user_status" tableName="T_WEIXIN_USER" unique="false">
+            <column name="USER_STATUS" type="INT(4)"/>
+        </createIndex>
+        <createIndex indexName="idx_weixin_user_delete_flag" tableName="T_WEIXIN_USER" unique="false">
+            <column name="DELETE_FLAG" type="INT(4)"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

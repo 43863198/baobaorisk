@@ -8,7 +8,5 @@ import java.util.List;
 
 
 public interface PayOrderRepository extends JpaRepository<PayOrder, String> {
-//    List<PayOrder> findByPrepayId(String prepayId);
-
     List<PayOrder> findByTradeNo(String tradeNo);
 }

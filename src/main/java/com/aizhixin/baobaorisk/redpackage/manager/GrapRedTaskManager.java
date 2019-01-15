@@ -2,6 +2,7 @@ package com.aizhixin.baobaorisk.redpackage.manager;
 
 import com.aizhixin.baobaorisk.common.core.DataValidity;
 import com.aizhixin.baobaorisk.redpackage.core.GrapRedPackageStatus;
+import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
@@ -74,5 +75,17 @@ public class GrapRedTaskManager {
 
     public Page<GrapRedPackageTaskVO> queryGrapTask(Pageable pageable, String openId) {
         return grapRedTaskRepository.findByOpenIdAndDeleteFlagOrderByCreatedDate(pageable, openId, DataValidity.VALID.getState());
+    }
+
+    public GrapPackageCountDTO countByOpenId(String openId) {
+        GrapPackageCountDTO d;
+        List<GrapPackageCountDTO> list = grapRedTaskRepository.countByOpenIdAndTaskStatusAndDeleteFlag(openId, GrapRedPackageStatus.PASSED.getStateCode(), DataValidity.VALID.getState());
+        if (null == list || list.isEmpty()) {
+            d = new GrapPackageCountDTO(0L, 0L);
+        } else {
+            d = list.get(0);
+        }
+        d.setTasks(grapRedTaskRepository.countByOpenIdAndDeleteFlag(openId, DataValidity.VALID.getState()));
+        return d;
     }
 }

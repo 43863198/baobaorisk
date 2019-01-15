@@ -7,26 +7,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@ApiModel(description="发布的红包任务统计数据")
+@ApiModel(description="抢包任务统计数据")
 @NoArgsConstructor
 @ToString
-public class PublishRedPackageCountVO {
+public class GrapRedPackageCountVO {
     @ApiModelProperty(value = "昵称")
     @Getter @Setter private String nick;
 
     @ApiModelProperty(value = "头像url")
     @Getter @Setter private String avatar;
 
-    @ApiModelProperty(value = "任务数量")
+    @ApiModelProperty(value = "参与任务数量")
     @Getter @Setter private int taskNum = 0;
 
-    @ApiModelProperty(value = "红包总金额")
+    @ApiModelProperty(value = "抢包总金额")
     @Getter @Setter private double totalFee = 0.0;
 
-    @ApiModelProperty(value = "红包总数量")
+    @ApiModelProperty(value = "抢包成功总数量")
     @Getter @Setter private int redNum = 0;
 
-    public PublishRedPackageCountVO(String nick , String avatar, Long taskNum, Double totalFee, Long redNum) {
+    public GrapRedPackageCountVO(String nick , String avatar, Long taskNum, Double totalFee, Long redNum) {
         this.nick = nick;
         this.avatar = avatar;
         this.taskNum = null == taskNum? 0 : taskNum.intValue();
