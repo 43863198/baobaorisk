@@ -22,6 +22,8 @@ public interface GrapRedTaskRepository extends JpaRepository<GrapRedTask, String
 
     Long countByRedTaskAndTaskStatusAndDeleteFlag(RedTask redTask, int taskStatus, int deleteFlag);
 
+    long countByRedTaskAndOpenIdAndDeleteFlag(RedTask redTask, String openId, int deleteFlag);
+
     @Modifying
     @Query("UPDATE #{#entityName} t SET t.taskStatus = 80 WHERE t.redTask = :redTask AND t.taskStatus = :taskStatus AND t.deleteFlag = :deleteFlag")
     void updateByRedTaskAndTaskStatusAndDeleteFlag(@Param(value = "redTask") RedTask redTask, @Param(value = "taskStatus") int taskStatus, @Param(value = "deleteFlag") int deleteFlag);

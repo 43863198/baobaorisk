@@ -10,4 +10,6 @@
 	<include file="classpath:liquibase/changelog/20190111201312_update_entity_PayOrder.xml" relativeToChangelogFile="false"/>
 	<include file="classpath:liquibase/changelog/20190111201712_update_entity_RedTask.xml" relativeToChangelogFile="false"/>
 	<include file="classpath:liquibase/changelog/20190114140758_add_entity_GrapRedTask.xml" relativeToChangelogFile="false"/>
+	<include file="classpath:liquibase/changelog/20190115142512_add_entity_WeixinUser.xml" relativeToChangelogFile="false"/>
+	<include file="classpath:liquibase/changelog/20190115165045_add_entity_TradeRecord.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

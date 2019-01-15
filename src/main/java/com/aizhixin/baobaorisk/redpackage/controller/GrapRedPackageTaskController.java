@@ -24,12 +24,7 @@ public class GrapRedPackageTaskController {
     @ApiOperation(httpMethod = "POST", value = "抢包任务创建", notes = "抢包任务创建<br><br><b>@author zhen.pan</b>")
     public MsgVO grapCreate(@ApiParam(value = "openId", required = true) @PathVariable String openId,
                        @ApiParam(value = "taskId 是必须的，填上表单数据和微信用户信息", required = true) @RequestBody GrapRedPackageVO grapVo) {
-        MsgVO vo = new MsgVO ();
-        String id = grapRedPackageTaskService.createGrapRedTask(grapVo.getTaskId(), grapVo.getPicName(), grapVo.getRemark(), grapVo.getIsPublish(), grapVo.getNick(), openId, grapVo.getAvatar());
-        if (null == id) {
-            vo.setMsg("fail");
-        }
-        return vo;
+        return grapRedPackageTaskService.createGrapRedTask(grapVo.getTaskId(), grapVo.getPicName(), grapVo.getRemark(), grapVo.getIsPublish(), grapVo.getNick(), openId, grapVo.getAvatar());
     }
 
     @GetMapping(value = "/{openId}/count", produces = MediaType.APPLICATION_JSON_VALUE)

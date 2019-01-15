@@ -19,7 +19,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
-@ApiModel(description="交易记录/支付订单")
+@ApiModel(description="支付记录/支付订单")
 @Entity(name = "T_PAY_ORDER")
 @NoArgsConstructor
 @ToString

@@ -4,6 +4,7 @@ import com.aizhixin.baobaorisk.common.core.ErrorCode;
 import com.aizhixin.baobaorisk.common.exception.CommonException;
 import com.aizhixin.baobaorisk.common.qiniu.QiniuHelper;
 import com.aizhixin.baobaorisk.common.rest.RestUtil;
+import com.aizhixin.baobaorisk.common.tools.DateUtil;
 import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.tools.PageUtil;
 import com.aizhixin.baobaorisk.common.vo.MsgVO;
@@ -11,14 +12,17 @@ import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.GrapRedPackageStatus;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
+import com.aizhixin.baobaorisk.redpackage.core.TradeType;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.entity.TradeRecord;
 import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.GrapRedTaskManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.manager.TradeRecordManager;
 import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageListVO;
 import com.aizhixin.baobaorisk.redpackage.vo.PublishRedPackageCountVO;
@@ -67,6 +71,8 @@ public class PublishRedPackageTaskService {
     private GrapRedTaskManager grapRedTaskManager;
     @Autowired
     private WeixinUserManager weixinUserManager;
+    @Autowired
+    private TradeRecordManager tradeRecordManager;
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -299,6 +305,9 @@ public class PublishRedPackageTaskService {
         return red;
     }
 
+    /**
+     * 审核参与的任务并决定是否发放红包
+     */
     public MsgVO doVerifyGrapTask(String openId, String taskId, String grapId, Integer verifyStatus) {
         MsgVO v = new MsgVO ();
         if (GrapRedPackageStatus.PASSED.getStateCode() != verifyStatus && GrapRedPackageStatus.NOT_PASSING.getStateCode() != verifyStatus) {
@@ -329,6 +338,7 @@ public class PublishRedPackageTaskService {
                 return v;
             }
         }
+        Date cur = new Date ();
         boolean compelete = false;
         if (GrapRedPackageStatus.PASSED.getStateCode() == verifyStatus) {
             //验证红包数量，计算红包金额
@@ -341,9 +351,20 @@ public class PublishRedPackageTaskService {
             if (c.getGrapNums() + 1 >= t.getNum()) {
                 compelete = false;
             }
+
+            TradeRecord tradeRecord = new TradeRecord();
+            tradeRecord.setOpenId(g.getOpenId());
+            tradeRecord.setTradeNo(t.getId());
+            tradeRecord.setTradeName("红包:" + t.getTaskName());
+            tradeRecord.setTotalFee(g.getTotalFee());
+            tradeRecord.setCashFee(g.getTotalFee());
+
+            tradeRecord.setTimeEnd(DateUtil.formatDate(cur));
+            tradeRecord.setTradeType(TradeType.RED.getStateCode());
+            tradeRecordManager.save(tradeRecord);
         }
         g.setTaskStatus(verifyStatus);
-        g.setVerifyDate(new Date());
+        g.setVerifyDate(cur);
         grapRedTaskManager.save(g);
 
         /**********************************************更新用户已发布数据**************************************************/

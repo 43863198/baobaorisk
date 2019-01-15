@@ -6,13 +6,16 @@ import com.aizhixin.baobaorisk.common.wxpay.WXPayUtil;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
+import com.aizhixin.baobaorisk.redpackage.core.TradeType;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
 import com.aizhixin.baobaorisk.redpackage.dto.PublishPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
+import com.aizhixin.baobaorisk.redpackage.entity.TradeRecord;
 import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.PayOrderManager;
 import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
+import com.aizhixin.baobaorisk.redpackage.manager.TradeRecordManager;
 import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
 import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,8 @@ public class PayService {
     private RedTaskManager redTaskManager;
     @Autowired
     private WeixinUserManager weixinUserManager;
+    @Autowired
+    private TradeRecordManager tradeRecordManager;
 
     /**
      * 创建红包订单任务（用于记录支付情况）
@@ -195,6 +200,22 @@ public class PayService {
                     r.setTotalFee(o.getCashFee());
                     r.setRedStatus(RedPackageTaskStatus.TASKING.getStateCode());
                     redTaskManager.save(r);
+
+                    /***********************************生成交易记录*************************************/
+                    TradeRecord tradeRecord = tradeRecordManager.findByOpenIdAndTradeNo(r.getOpenId(), r.getTradeNo());
+                    if (null == tradeRecord) {
+                        tradeRecord = new TradeRecord();
+                        tradeRecord.setOpenId(r.getOpenId());
+                        tradeRecord.setTradeNo(r.getTradeNo());
+                        tradeRecord.setTradeName("包包大冒险充值:" + r.getTaskName());
+                        tradeRecord.setTotalFee(o.getTotalFee());
+                        tradeRecord.setCashFee(r.getTotalFee());
+                        tradeRecord.setTransactionId(o.getTransactionId());
+                        tradeRecord.setBankType(o.getBankType());
+                        tradeRecord.setTimeEnd(o.getTimeEnd());
+                        tradeRecord.setTradeType(TradeType.WX_PAY.getStateCode());
+                        tradeRecordManager.save(tradeRecord);
+                    }
 
                     /***********************************用户信息发布任务统计*************************************/
                     WeixinUser u = weixinUserManager.findByOpenId(r.getOpenId());
