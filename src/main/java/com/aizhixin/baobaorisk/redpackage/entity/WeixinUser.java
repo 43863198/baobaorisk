@@ -31,7 +31,7 @@ public class WeixinUser implements java.io.Serializable {
     @Getter @Setter private String id;
 
     @ApiModelProperty(value = "openId")
-    @Column(name = "OPEN_ID")
+    @Column(name = "OPENID")
     @Getter @Setter private String openId;
 
     @ApiModelProperty(value = "微信头像URL")
