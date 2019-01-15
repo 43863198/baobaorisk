@@ -1,7 +1,9 @@
 package com.aizhixin.baobaorisk.redpackage.controller;
 
+import com.aizhixin.baobaorisk.common.tools.PageData;
 import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.redpackage.service.GrapRedPackageTaskService;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,9 +19,9 @@ public class GrapRedPackageTaskController {
     @Autowired
     private GrapRedPackageTaskService grapRedPackageTaskService;
 
-    @PostMapping(value = "/order/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(httpMethod = "POST", value = "红包充值", notes = "红包充值<br><br><b>@author zhen.pan</b>")
-    public MsgVO order(@ApiParam(value = "openId", required = true) @PathVariable String openId,
+    @PostMapping(value = "/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "POST", value = "抢包任务创建", notes = "抢包任务创建<br><br><b>@author zhen.pan</b>")
+    public MsgVO grapCreate(@ApiParam(value = "openId", required = true) @PathVariable String openId,
                        @ApiParam(value = "taskId 是必须的，填上表单数据和微信用户信息", required = true) @RequestBody GrapRedPackageVO grapVo) {
         MsgVO vo = new MsgVO ();
         String id = grapRedPackageTaskService.createGrapRedTask(grapVo.getTaskId(), grapVo.getPicName(), grapVo.getRemark(), grapVo.getIsPublish(), grapVo.getNick(), openId, grapVo.getAvatar());
@@ -27,5 +29,13 @@ public class GrapRedPackageTaskController {
             vo.setMsg("fail");
         }
         return vo;
+    }
+
+    @GetMapping(value = "/{openId}/{pageNumber}/{pageSize}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "已抢包列表查询", notes = "已抢包列表查询<br><br><b>@author zhen.pan</b>")
+    public PageData<GrapRedPackageTaskVO> order(@ApiParam(value = "openId", required = true) @PathVariable String openId,
+                                                @ApiParam(value = "pageNumber", required = true) @PathVariable Integer pageNumber,
+                                                @ApiParam(value = "pageSize", required = true) @PathVariable Integer pageSize) {
+        return grapRedPackageTaskService.queryGrapTask(openId, pageNumber, pageSize);
     }
 }
