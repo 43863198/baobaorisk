@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum GrapRedPackageStatus {
     WAITING(10),//待审核10
     PASSED(20),//审核通过20
-    NOT_PASSING(80),//审核未通过30
+    NOT_PASSING(30),//审核未通过30
     INVALID(80);//任务失效80
 
     @Getter private int stateCode;
