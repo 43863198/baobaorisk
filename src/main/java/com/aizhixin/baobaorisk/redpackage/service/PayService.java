@@ -1,5 +1,8 @@
 package com.aizhixin.baobaorisk.redpackage.service;
 
+import com.aizhixin.baobaorisk.common.core.PublicErrorCode;
+import com.aizhixin.baobaorisk.common.exception.CommonException;
+import com.aizhixin.baobaorisk.common.vo.MsgVO;
 import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.common.wxpay.WXPay;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayConstants;
@@ -9,15 +12,15 @@ import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
 import com.aizhixin.baobaorisk.redpackage.core.TradeStatus;
 import com.aizhixin.baobaorisk.redpackage.core.TradeType;
 import com.aizhixin.baobaorisk.redpackage.core.WeixinContants;
+import com.aizhixin.baobaorisk.redpackage.dto.GrapPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.dto.PublishPackageCountDTO;
+import com.aizhixin.baobaorisk.redpackage.dto.WithDrawCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.PayOrder;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.TradeRecord;
 import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
-import com.aizhixin.baobaorisk.redpackage.manager.PayOrderManager;
-import com.aizhixin.baobaorisk.redpackage.manager.RedTaskManager;
-import com.aizhixin.baobaorisk.redpackage.manager.TradeRecordManager;
-import com.aizhixin.baobaorisk.redpackage.manager.WeixinUserManager;
+import com.aizhixin.baobaorisk.redpackage.manager.*;
+import com.aizhixin.baobaorisk.redpackage.vo.BalanceCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,8 @@ public class PayService {
     private PayOrderManager payOrderManager;
     @Autowired
     private RedTaskManager redTaskManager;
+    @Autowired
+    private GrapRedTaskManager grapRedTaskManager;
     @Autowired
     private WeixinUserManager weixinUserManager;
     @Autowired
@@ -239,17 +244,24 @@ public class PayService {
     }
 
 
-    public WxPrePayVO payToWeixinOne(String openId, Integer fee) {
-        WXPay wxpay;
-        WxPrePayVO vo = new WxPrePayVO ();
-
+    public MsgVO payToWeixinOne(String openId, Integer fee) {
+        MsgVO vo = new MsgVO ();
+        if (null == fee || fee < 100) {
+            throw new CommonException(PublicErrorCode.PARAM_EXCEPTION.getIntValue(), "提现至少1元及以上额度");
+        }
+        GrapPackageCountDTO gd = grapRedTaskManager.countByOpenId(openId);//之前所有抢到的红包总额
+        WithDrawCountDTO ct = tradeRecordManager.countFeeByOpenId(openId);//之前所有的提现
+        int discountFee = fee / 100 + (fee % 100 >= 50 ? 1 : 0);//手续费1%，四舍五入
+        if (gd.getFees() < fee + discountFee + ct.getDiscount() + ct.getFee()) {//红包总额 < 本次支付金额 + 手续费 + 历史累计的提现总额 + 历史提现的总手续费
+            throw new CommonException(PublicErrorCode.PARAM_EXCEPTION.getIntValue(), "余额不足");
+        }
         /***********************微信企业付款到用户零钱数据构造及调用***********************/
         Map<String, String> data = new HashMap<>();
         data.put("partner_trade_no", Utility.generateUUID());
         data.put("openid", openId);
         data.put("check_name", "NO_CHECK");
         data.put("amount", "" + fee);
-        data.put("desc", "付款到零钱测试");
+        data.put("desc", wxConfig.getWithDrawName());
         data.put("spbill_create_ip", wxConfig.getCreateIp());
         data.put("mch_appid", wxConfig.getAppID());
         data.put("mchid", wxConfig.getMchID());
@@ -257,20 +269,70 @@ public class PayService {
 
         try {
             data.put("sign", WXPayUtil.generateSignature(data, wxConfig.getKey(), WXPayConstants.SignType.MD5));
-            wxpay = new WXPay(wxConfig);
+            WXPay wxpay = new WXPay(wxConfig);
             Map<String, String> resp = wxpay.enterprisePay(data);//调用微信预支付
             log.info("用户提现返回数据:{}", resp);
             //{nonce_str=G4cRziWosUg1u5uiSMeIgvf4QCX7gNFL, mchid=1488609932, partner_trade_no=6b9bde071e924a648db95117ecc9960a, payment_time=2019-01-16 11:29:12, mch_appid=wxe03f58cd79c2d8d9, payment_no=1488609932201901167624116076, return_msg=, result_code=SUCCESS, return_code=SUCCESS}
             if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) &&
-                    WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code"))) {//预支付成功
+                    WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code"))) {//调用企业付款成功
+                String tradeNo = resp.get("partner_trade_no");
+                String paymentTime = resp.get("payment_time");//2019-01-16 11:29:12
+                if (null != paymentTime) {
+                    paymentTime = paymentTime.replaceAll("-", "");
+                    paymentTime = paymentTime.replaceAll(" ", "");
+                    paymentTime = paymentTime.replaceAll(":", "");
+                }
+                String payment_No = resp.get("payment_no");
+                if (!data.get("partner_trade_no").equals(tradeNo)) {
+                    log.info("用户提现支付失败，原订单号:{}， 返回订单号:{}, 错误说明:{}", data.get("partner_trade_no"), tradeNo, resp.get("err_code_des"));
+                } else {
+                    /***********************************生成交易记录*************************************/
+                    TradeRecord tradeRecord = new TradeRecord();
+                    tradeRecord.setOpenId(openId);
+                    tradeRecord.setTradeNo(tradeNo);
+                    tradeRecord.setTradeName("包包大冒险提现");
+                    tradeRecord.setTotalFee(fee);
+                    tradeRecord.setCashFee(fee);
+                    tradeRecord.setDiscountFee(discountFee);//手续费1%，四舍五入
+                    tradeRecord.setTransactionId(payment_No);
+                    tradeRecord.setTimeEnd(paymentTime);
+                    tradeRecord.setTradeType(TradeType.WX_WITHDRAW.getStateCode());
+                    tradeRecordManager.save(tradeRecord);
 
+                    /***********************************用户信息发布任务统计*************************************/
+                    WeixinUser u = weixinUserManager.findByOpenId(openId);
+                    if (null != u) {
+                        WithDrawCountDTO c = tradeRecordManager.countFeeByOpenId(openId);
+                        u.setCashFee(c.getFee());
+                        u.setDiscountFee(c.getDiscount());
+                        weixinUserManager.save(u);
+                    }
+                }
             } else {
-                vo.setReturn_code(WeixinContants.FAIL);
+                vo.setMsg(WeixinContants.FAIL);
+                throw new CommonException(PublicErrorCode.SAVE_EXCEPTION.getIntValue(), "提现失败,调用提现失败");
             }
         } catch (Exception e) {
             log.warn("用户提现失败.", e);
-            vo.setReturn_code(WeixinContants.FAIL);
+            vo.setMsg(WeixinContants.FAIL);
+            throw new CommonException(PublicErrorCode.SAVE_EXCEPTION.getIntValue(), "提现失败,出错");
         }
         return vo;
+    }
+
+    /**
+     * 余额计算
+     */
+    public BalanceCountVO queryBalanceCount(String openId) {
+        BalanceCountVO v = new BalanceCountVO ();
+        GrapPackageCountDTO gd = grapRedTaskManager.countByOpenId(openId);//之前所有抢到的红包总额
+        WithDrawCountDTO ct = tradeRecordManager.countFeeByOpenId(openId);//之前所有的提现
+        v.setBalance((gd.getFees() - ct.getFee() - ct.getDiscount()) / 100.0);//红包总额 - 历史累计的提现总额 - 历史提现的总手续费
+        WeixinUser u = weixinUserManager.findByOpenId(openId);
+        if (null != u) {
+            v.setAvatar(u.getAvatar());
+            v.setNick(u.getNick());
+        }
+        return v;
     }
 }
