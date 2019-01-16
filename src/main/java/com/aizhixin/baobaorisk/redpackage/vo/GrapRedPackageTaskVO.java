@@ -15,6 +15,9 @@ import java.util.Date;
 @ToString
 public class GrapRedPackageTaskVO {
 
+    @ApiModelProperty(value = "红包任务ID")
+    @Getter @Setter private String taskId;
+
     @ApiModelProperty(value = "发包人的昵称")
     @Getter @Setter private String nick;
 
@@ -34,7 +37,8 @@ public class GrapRedPackageTaskVO {
     @ApiModelProperty(value = "抢包状态:待审核10，审核通过20，审核未通过30，任务失效(完成)80")
     @Getter @Setter private int grapStatus;
 
-    public GrapRedPackageTaskVO (String nick, String avatar, String remark, Date createDate, Integer totalFee, int grapStatus) {
+    public GrapRedPackageTaskVO (String taskId, String nick, String avatar, String remark, Date createDate, Integer totalFee, int grapStatus) {
+        this.taskId = taskId;
         this.nick = nick;
         this.avatar = avatar;
         this.remark = remark;

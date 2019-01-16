@@ -1,6 +1,5 @@
 package com.aizhixin.baobaorisk.redpackage.vo;
 
-import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -47,20 +46,16 @@ public class GrapRedPackageListVO {
     @ApiModelProperty(value = "抢红包任务状态，待审核10，审核通过20，审核未通过30，任务失效80")
     @Getter @Setter private int taskStatus;
 
-    public GrapRedPackageListVO(GrapRedTask r) {
-        if (null != r) {
-            this.id = r.getId();
-            this.picName = r.getPic();
-            this.remark = r.getRemark();
-            this.picPublish = r.getPicPublish();
-            this.nick = r.getNick();
-            this.avatar = r.getAvatar();
-            this.totalFee = (null != r.getTotalFee() ? r.getTotalFee() / 100.0 : null);
-            this.verifyDate = r.getVerifyDate();
-            this.taskStatus = r.getTaskStatus();
-//            if (null != r.getRedTask()) {
-//                this.taskId = r.getRedTask().getId();
-//            }
-        }
+    public GrapRedPackageListVO(String taskId, String id, String picName, String remark, Integer picPublish, String nick, String avatar, Integer totalFee, Date verifyDate, Integer taskStatus) {
+        this.taskId = taskId;
+        this.id = id;
+        this.picName = picName;
+        this.remark = remark;
+        this.picPublish = picPublish;
+        this.nick = nick;
+        this.avatar = avatar;
+        this.totalFee = (null != totalFee ? totalFee / 100.0 : null);
+        this.verifyDate = verifyDate;
+        this.taskStatus = taskStatus;
     }
 }
