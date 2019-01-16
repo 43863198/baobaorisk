@@ -59,7 +59,7 @@ public class PayService {
         if (StringUtils.isEmpty(openId) || null == totalFee ||
                 totalFee <= 0.01 || totalFee > 200 || null == num ||
                 num <= 0 || num > 100 || totalFee/num < 0.01) {
-            log.info("Param validator fail.openId:{}, totoalFee:{}, num:{}", openId, totalFee, num);
+            log.info("微信红包充值，参数验证失败.openId:{}, totoalFee:{}, num:{}", openId, totalFee, num);
             vo.setReturn_code(WeixinContants.FAIL);
             return vo;
         }
@@ -99,7 +99,7 @@ public class PayService {
         try {
             wxpay = new WXPay(wxConfig);
             Map<String, String> resp = wxpay.unifiedOrder(data);//调用微信预支付
-            log.info("Weixin Order create prePay back msg:{}", resp);
+            log.info("微信预支付，返回信息:{}", resp);
             if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) &&
                     WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code")) &&
                     !StringUtils.isEmpty(resp.get("prepay_id"))) {//预支付成功
@@ -144,11 +144,11 @@ public class PayService {
 
                 vo.setSign(sign);
             } else {
-                log.info("Weixin Order create prepay fail. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
+                log.info("微信预支付失败. trade_no:{}, total_fee:{}", o.getTradeNo(), o.getTotalFee());
                 vo.setReturn_code(WeixinContants.FAIL);
             }
         } catch (Exception e) {
-            log.warn("Weixin Order create Invoke weixin pre pay fail.{}", e);
+            log.warn("微信预支付及创建红包任务失败", e);
             vo.setReturn_code(WeixinContants.FAIL);
         }
         return vo;
@@ -309,12 +309,10 @@ public class PayService {
                     }
                 }
             } else {
-                vo.setMsg(WeixinContants.FAIL);
                 throw new CommonException(PublicErrorCode.SAVE_EXCEPTION.getIntValue(), "提现失败,调用提现失败");
             }
         } catch (Exception e) {
             log.warn("用户提现失败.", e);
-            vo.setMsg(WeixinContants.FAIL);
             throw new CommonException(PublicErrorCode.SAVE_EXCEPTION.getIntValue(), "提现失败,出错");
         }
         return vo;
