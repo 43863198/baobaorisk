@@ -1,6 +1,7 @@
 package com.aizhixin.baobaorisk.common.controller;
 
 import com.aizhixin.baobaorisk.common.exception.CommonException;
+import com.aizhixin.baobaorisk.redpackage.service.PayService;
 import com.aizhixin.baobaorisk.redpackage.service.PublishRedPackageTaskService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 public class ManuController {
     @Autowired
     private PublishRedPackageTaskService publishRedPackageTaskService;
+    @Autowired
+    private PayService payService;
 
     @PutMapping(value = "/exception/{phone}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "PUT", value = "异常测试", notes = "异常测试<br><br><b>@author zhen.pan</b>")
@@ -28,4 +31,11 @@ public class ManuController {
             @ApiParam(value = "小程序路径") @RequestParam(value = "path", required = false) String path) {
         publishRedPackageTaskService.getWxCode(id, path, 0);
     }
+
+//    @PutMapping(value = "/pay/{openId}/{fee}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @ApiOperation(httpMethod = "PUT", value = "异常测试", notes = "异常测试<br><br><b>@author zhen.pan</b>")
+//    public void exception(@ApiParam(value = "用户", required = true) @PathVariable String openId,
+//                          @ApiParam(value = "金额", required = true) @PathVariable Integer fee) {
+//        payService.payToWeixinOne(openId, fee);
+//    }
 }

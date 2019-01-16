@@ -2,6 +2,7 @@ package com.aizhixin.baobaorisk.redpackage.service;
 
 import com.aizhixin.baobaorisk.common.wxbasic.Utility;
 import com.aizhixin.baobaorisk.common.wxpay.WXPay;
+import com.aizhixin.baobaorisk.common.wxpay.WXPayConstants;
 import com.aizhixin.baobaorisk.common.wxpay.WXPayUtil;
 import com.aizhixin.baobaorisk.redpackage.conf.WxConfig;
 import com.aizhixin.baobaorisk.redpackage.core.RedPackageTaskStatus;
@@ -235,5 +236,41 @@ public class PayService {
         } else {
             log.warn("微信小程序付款回调，没有找到订单号:{}", tradeNo);
         }
+    }
+
+
+    public WxPrePayVO payToWeixinOne(String openId, Integer fee) {
+        WXPay wxpay;
+        WxPrePayVO vo = new WxPrePayVO ();
+
+        /***********************微信企业付款到用户零钱数据构造及调用***********************/
+        Map<String, String> data = new HashMap<>();
+        data.put("partner_trade_no", Utility.generateUUID());
+        data.put("openid", openId);
+        data.put("check_name", "NO_CHECK");
+        data.put("amount", "" + fee);
+        data.put("desc", "付款到零钱测试");
+        data.put("spbill_create_ip", wxConfig.getCreateIp());
+        data.put("mch_appid", wxConfig.getAppID());
+        data.put("mchid", wxConfig.getMchID());
+        data.put("nonce_str", WXPayUtil.generateNonceStr());
+
+        try {
+            data.put("sign", WXPayUtil.generateSignature(data, wxConfig.getKey(), WXPayConstants.SignType.MD5));
+            wxpay = new WXPay(wxConfig);
+            Map<String, String> resp = wxpay.enterprisePay(data);//调用微信预支付
+            log.info("用户提现返回数据:{}", resp);
+            //{nonce_str=G4cRziWosUg1u5uiSMeIgvf4QCX7gNFL, mchid=1488609932, partner_trade_no=6b9bde071e924a648db95117ecc9960a, payment_time=2019-01-16 11:29:12, mch_appid=wxe03f58cd79c2d8d9, payment_no=1488609932201901167624116076, return_msg=, result_code=SUCCESS, return_code=SUCCESS}
+            if (WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("return_code")) &&
+                    WeixinContants.SUCCESS.equalsIgnoreCase(resp.get("result_code"))) {//预支付成功
+
+            } else {
+                vo.setReturn_code(WeixinContants.FAIL);
+            }
+        } catch (Exception e) {
+            log.warn("用户提现失败.", e);
+            vo.setReturn_code(WeixinContants.FAIL);
+        }
+        return vo;
     }
 }

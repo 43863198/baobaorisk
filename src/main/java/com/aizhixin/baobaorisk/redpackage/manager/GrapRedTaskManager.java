@@ -7,6 +7,7 @@ import com.aizhixin.baobaorisk.redpackage.dto.RedPackageCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.GrapRedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.repository.GrapRedTaskRepository;
+import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageListVO;
 import com.aizhixin.baobaorisk.redpackage.vo.GrapRedPackageTaskVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,22 +41,26 @@ public class GrapRedTaskManager {
         return o.orElse(null);
     }
 
-    public Page<GrapRedTask> findByRedTask(Pageable pageable, RedTask redTask) {
-        return grapRedTaskRepository.findByRedTaskAndDeleteFlagOrderByCreatedDate(pageable, redTask, DataValidity.VALID.getState());
+//    public Page<GrapRedTask> findByRedTask(Pageable pageable, RedTask redTask) {
+//        return grapRedTaskRepository.findByRedTaskAndDeleteFlagOrderByCreatedDate(pageable, redTask, DataValidity.VALID.getState());
+//    }
+
+//    public Page<GrapRedTask> findByRedTaskId(Pageable pageable, String taskId) {
+//        return grapRedTaskRepository.findByRedTask_IdAndDeleteFlagOrderByCreatedDate(pageable, taskId, DataValidity.VALID.getState());
+//    }
+
+    public Page<GrapRedPackageListVO> findByRedTaskId(Pageable pageable, String taskId) {
+        return grapRedTaskRepository.findByRedTask_IdAndDeleteFlag(pageable, taskId, DataValidity.VALID.getState());
     }
 
-    public Page<GrapRedTask> findByRedTaskId(Pageable pageable, String taskId) {
-        return grapRedTaskRepository.findByRedTask_IdAndDeleteFlagOrderByCreatedDate(pageable, taskId, DataValidity.VALID.getState());
-    }
-
-    public int countGrapVerifyPassedTask(RedTask redTask) {
-        Long c = grapRedTaskRepository.countByRedTaskAndTaskStatusAndDeleteFlag(redTask, GrapRedPackageStatus.PASSED.getStateCode(), DataValidity.VALID.getState());
-        if (null == c) {
-            return 0;
-        } else {
-            return c.intValue();
-        }
-    }
+//    public int countGrapVerifyPassedTask(RedTask redTask) {
+//        Long c = grapRedTaskRepository.countByRedTaskAndTaskStatusAndDeleteFlag(redTask, GrapRedPackageStatus.PASSED.getStateCode(), DataValidity.VALID.getState());
+//        if (null == c) {
+//            return 0;
+//        } else {
+//            return c.intValue();
+//        }
+//    }
 
     public int countByRedTaskAndOpenId(RedTask redTask, String openId) {
         Long c = grapRedTaskRepository.countByRedTaskAndOpenIdAndDeleteFlag(redTask, openId, DataValidity.VALID.getState());

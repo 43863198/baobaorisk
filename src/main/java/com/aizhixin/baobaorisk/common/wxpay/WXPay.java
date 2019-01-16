@@ -686,4 +686,31 @@ public class WXPay {
     }
 
 
+    public Map<String, String> enterprisePay(Map<String, String> reqData) throws Exception {
+        String url = WXPayConstants.ENTERPRISE_PAY_URL_SUFFIX;
+        String respXml = this.requestWithCert(url, reqData, this.config.getHttpConnectTimeoutMs(), this.config.getHttpReadTimeoutMs());
+        return this.processResponseXmlNoSign(respXml);
+    }
+
+    public Map<String, String> processResponseXmlNoSign(String xmlStr) throws Exception {
+        String RETURN_CODE = "return_code";
+        String return_code;
+        Map<String, String> respData = WXPayUtil.xmlToMap(xmlStr);
+        if (respData.containsKey(RETURN_CODE)) {
+            return_code = respData.get(RETURN_CODE);
+        }
+        else {
+            throw new Exception(String.format("No `return_code` in XML: %s", xmlStr));
+        }
+
+        if (return_code.equals(WXPayConstants.FAIL)) {
+            return respData;
+        }
+        else if (return_code.equals(WXPayConstants.SUCCESS)) {
+            return respData;
+        }
+        else {
+            throw new Exception(String.format("return_code value %s is invalid in XML: %s", return_code, xmlStr));
+        }
+    }
 } // end class

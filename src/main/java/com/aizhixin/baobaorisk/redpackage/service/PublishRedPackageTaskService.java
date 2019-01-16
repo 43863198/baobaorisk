@@ -276,16 +276,11 @@ public class PublishRedPackageTaskService {
         PageRequest pageRequest = PageUtil.createNoErrorPageRequest(pageNumber, pageSize);
         page.getPage().setPageNumber(pageRequest.getPageNumber() + 1);
         page.getPage().setPageSize(pageRequest.getPageSize());
-        Page<GrapRedTask> p = grapRedTaskManager.findByRedTaskId(pageRequest, taskId);
+        Page<GrapRedPackageListVO> p = grapRedTaskManager.findByRedTaskId(pageRequest, taskId);
         if (null != p) {
             page.getPage().setTotalElements(p.getTotalElements());
             page.getPage().setTotalPages(p.getTotalPages());
-            List<GrapRedPackageListVO> list = new ArrayList<>();
-            for (GrapRedTask r : p.getContent()) {
-                GrapRedPackageListVO v = new GrapRedPackageListVO(r);
-                list.add(v);
-            }
-            page.setData(list);
+            page.setData(p.getContent());
         }
         return page;
     }
