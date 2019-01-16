@@ -30,6 +30,7 @@ wx:
   createIp: 114.67.48.139
   notifyUrl: https://wx.aizhixin.com/open/v1/wxpay/notify
   tradeName: 包包大冒险-红包充值
+  withDrawName: 提现到零钱
 
 server:
   tomcat:

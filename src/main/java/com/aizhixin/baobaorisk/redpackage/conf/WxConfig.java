@@ -31,6 +31,8 @@ public class WxConfig extends WXPayConfig {
     @Getter  private String notifyUrl;
     @Value("${wx.tradeName}")
     @Getter  private String tradeName;
+    @Value("${wx.tradeName}")
+    @Getter  private String withDrawName;
 
 
     public WxConfig(@Value("${wx.certPath}") String certPath) throws Exception {

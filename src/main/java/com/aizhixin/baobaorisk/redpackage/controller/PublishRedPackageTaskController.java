@@ -82,4 +82,11 @@ public class PublishRedPackageTaskController {
                          @ApiParam(value = "通过20，不通过30", required = true) @PathVariable Integer verifyStatus) {
         return publishRedPackageTaskService.doVerifyGrapTask(openId, taskId, grapId, verifyStatus);
     }
+
+    @PutMapping(value = "/{openId}/withdraw/{fee}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "PUT", value = "提现", notes = "提现<br><br><b>@author zhen.pan</b>")
+    public MsgVO withdraw(@ApiParam(value = "openId", required = true) @PathVariable String openId,
+                          @ApiParam(value = "提现金额", required = true) @PathVariable Double fee) {
+        return payService.payToWeixinOne(openId, (int)(fee * 100));
+    }
 }

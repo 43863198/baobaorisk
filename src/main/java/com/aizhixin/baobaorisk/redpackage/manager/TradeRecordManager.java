@@ -1,6 +1,8 @@
 package com.aizhixin.baobaorisk.redpackage.manager;
 
 import com.aizhixin.baobaorisk.common.core.DataValidity;
+import com.aizhixin.baobaorisk.redpackage.core.TradeType;
+import com.aizhixin.baobaorisk.redpackage.dto.WithDrawCountDTO;
 import com.aizhixin.baobaorisk.redpackage.entity.TradeRecord;
 import com.aizhixin.baobaorisk.redpackage.repository.TradeRecordRepository;
 import com.aizhixin.baobaorisk.redpackage.vo.TradeRecordVO;
@@ -30,5 +32,14 @@ public class TradeRecordManager {
 
     public Page<TradeRecordVO> findByOpenId(Pageable pageable, String openId) {
         return  tradeRecordRepository.findByOpenIdAndDeleteFlagOrderByCreatedDateDesc(pageable, openId, DataValidity.VALID.getState());
+    }
+
+
+    public WithDrawCountDTO countFeeByOpenId(String openId) {
+        List<WithDrawCountDTO> list = tradeRecordRepository.countFeeByOpenIdAndDeleteFlag(openId, TradeType.WX_WITHDRAW.getStateCode(), DataValidity.VALID.getState());
+        if (null != list && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return new WithDrawCountDTO (0L, 0L);
     }
 }
