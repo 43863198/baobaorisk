@@ -83,10 +83,16 @@ public class PublishRedPackageTaskController {
         return publishRedPackageTaskService.doVerifyGrapTask(openId, taskId, grapId, verifyStatus);
     }
 
-    @PutMapping(value = "/{openId}/withdraw/{fee}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/withdraw/{openId}/{fee}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "PUT", value = "提现", notes = "提现<br><br><b>@author zhen.pan</b>")
     public MsgVO withdraw(@ApiParam(value = "openId", required = true) @PathVariable String openId,
                           @ApiParam(value = "提现金额", required = true) @PathVariable Double fee) {
         return payService.payToWeixinOne(openId, (int)(fee * 100));
+    }
+
+    @GetMapping(value = "/balance/{openId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(httpMethod = "GET", value = "个人中心余额查询", notes = "个人中心余额查询<br><br><b>@author zhen.pan</b>")
+    public BalanceCountVO withdraw(@ApiParam(value = "openId", required = true) @PathVariable String openId) {
+        return payService.queryBalanceCount(openId);
     }
 }

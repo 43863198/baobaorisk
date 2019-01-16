@@ -20,6 +20,7 @@ import com.aizhixin.baobaorisk.redpackage.entity.RedTask;
 import com.aizhixin.baobaorisk.redpackage.entity.TradeRecord;
 import com.aizhixin.baobaorisk.redpackage.entity.WeixinUser;
 import com.aizhixin.baobaorisk.redpackage.manager.*;
+import com.aizhixin.baobaorisk.redpackage.vo.BalanceCountVO;
 import com.aizhixin.baobaorisk.redpackage.vo.WxPrePayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -317,5 +318,21 @@ public class PayService {
             throw new CommonException(PublicErrorCode.SAVE_EXCEPTION.getIntValue(), "提现失败,出错");
         }
         return vo;
+    }
+
+    /**
+     * 余额计算
+     */
+    public BalanceCountVO queryBalanceCount(String openId) {
+        BalanceCountVO v = new BalanceCountVO ();
+        GrapPackageCountDTO gd = grapRedTaskManager.countByOpenId(openId);//之前所有抢到的红包总额
+        WithDrawCountDTO ct = tradeRecordManager.countFeeByOpenId(openId);//之前所有的提现
+        v.setBalance((gd.getFees() - ct.getFee() - ct.getDiscount()) / 100.0);//红包总额 - 历史累计的提现总额 - 历史提现的总手续费
+        WeixinUser u = weixinUserManager.findByOpenId(openId);
+        if (null != u) {
+            v.setAvatar(u.getAvatar());
+            v.setNick(u.getNick());
+        }
+        return v;
     }
 }
